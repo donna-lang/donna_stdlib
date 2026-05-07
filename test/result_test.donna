@@ -1,0 +1,76 @@
+import result
+import unittest/should
+
+pub fn is_ok_true_test() -> String:
+  result.is_ok(result.Ok(1)) |> should.be_true()
+
+pub fn is_ok_false_test() -> String:
+  result.is_ok(result.Error("oops")) |> should.be_false()
+
+pub fn is_error_true_test() -> String:
+  result.is_error(result.Error("oops")) |> should.be_true()
+
+pub fn is_error_false_test() -> String:
+  result.is_error(result.Ok(1)) |> should.be_false()
+
+pub fn unwrap_ok_test() -> String:
+  result.unwrap(result.Ok(42), 0) |> should.equal_int(42)
+
+pub fn unwrap_error_default_test() -> String:
+  result.unwrap(result.Error("oops"), 99) |> should.equal_int(99)
+
+pub fn unwrap_error_value_test() -> String:
+  result.unwrap_error(result.Error("oops"), "") |> should.equal_string("oops")
+
+pub fn unwrap_error_ok_default_test() -> String:
+  result.unwrap_error(result.Ok(1), "default") |> should.equal_string("default")
+
+pub fn map_ok_test() -> String:
+  result.map(result.Ok(5), fn(x: Int) -> x * 2)
+  |> result.unwrap(0)
+  |> should.equal_int(10)
+
+pub fn map_error_unchanged_test() -> String:
+  result.map(result.Error("oops"), fn(x: Int) -> x * 2)
+  |> result.is_error()
+  |> should.be_true()
+
+pub fn map_error_fn_test() -> String:
+  result.map_error(result.Error("oops"), fn(e: String) -> "wrapped: " <> e)
+  |> result.unwrap_error("")
+  |> should.equal_string("wrapped: oops")
+
+pub fn then_ok_test() -> String:
+  result.then(result.Ok(5), fn(x: Int) -> result.Ok(x + 1))
+  |> result.unwrap(0)
+  |> should.equal_int(6)
+
+pub fn then_error_test() -> String:
+  result.then(result.Error("oops"), fn(x: Int) -> result.Ok(x + 1))
+  |> result.is_error()
+  |> should.be_true()
+
+pub fn then_returns_error_test() -> String:
+  result.then(result.Ok(5), fn(_x: Int) -> result.Error("fail"))
+  |> result.is_error()
+  |> should.be_true()
+
+pub fn or_ok_test() -> String:
+  result.or(result.Ok(1), result.Ok(2))
+  |> result.unwrap(0)
+  |> should.equal_int(1)
+
+pub fn or_error_test() -> String:
+  result.or(result.Error("oops"), result.Ok(2))
+  |> result.unwrap(0)
+  |> should.equal_int(2)
+
+pub fn to_list_ok_test() -> String:
+  case result.to_list(result.Ok(42)):
+    [x] -> should.equal_int(x, 42)
+    _ -> should.fail("expected one element")
+
+pub fn to_list_error_test() -> String:
+  case result.to_list(result.Error("oops")):
+    [] -> ""
+    _ -> should.fail("expected empty list")

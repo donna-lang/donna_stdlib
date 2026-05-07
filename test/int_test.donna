@@ -1,0 +1,142 @@
+import int
+import unittest/should
+
+// to_string
+
+pub fn to_string_positive_test() -> String:
+  int.to_string(42) |> should.equal_string("42")
+
+pub fn to_string_negative_test() -> String:
+  int.to_string(-5) |> should.equal_string("-5")
+
+pub fn to_string_zero_test() -> String:
+  int.to_string(0) |> should.equal_string("0")
+
+// abs
+
+pub fn abs_positive_test() -> String:
+  int.abs(5) |> should.equal_int(5)
+
+pub fn abs_negative_test() -> String:
+  int.abs(-5) |> should.equal_int(5)
+
+pub fn abs_zero_test() -> String:
+  int.abs(0) |> should.equal_int(0)
+
+// min / max
+
+pub fn min_test() -> String:
+  int.min(3, 7) |> should.equal_int(3)
+
+pub fn min_equal_test() -> String:
+  int.min(5, 5) |> should.equal_int(5)
+
+pub fn max_test() -> String:
+  int.max(3, 7) |> should.equal_int(7)
+
+pub fn max_equal_test() -> String:
+  int.max(5, 5) |> should.equal_int(5)
+
+// clamp
+
+pub fn clamp_below_test() -> String:
+  int.clamp(1, 5, 10) |> should.equal_int(5)
+
+pub fn clamp_within_test() -> String:
+  int.clamp(7, 5, 10) |> should.equal_int(7)
+
+pub fn clamp_above_test() -> String:
+  int.clamp(15, 5, 10) |> should.equal_int(10)
+
+pub fn clamp_at_lo_test() -> String:
+  int.clamp(5, 5, 10) |> should.equal_int(5)
+
+pub fn clamp_at_hi_test() -> String:
+  int.clamp(10, 5, 10) |> should.equal_int(10)
+
+// is_even / is_odd
+
+pub fn is_even_true_test() -> String:
+  int.is_even(4) |> should.be_true()
+
+pub fn is_even_false_test() -> String:
+  int.is_even(3) |> should.be_false()
+
+pub fn is_even_zero_test() -> String:
+  int.is_even(0) |> should.be_true()
+
+pub fn is_odd_true_test() -> String:
+  int.is_odd(7) |> should.be_true()
+
+pub fn is_odd_false_test() -> String:
+  int.is_odd(8) |> should.be_false()
+
+// is_zero / is_positive / is_negative
+
+pub fn is_zero_true_test() -> String:
+  int.is_zero(0) |> should.be_true()
+
+pub fn is_zero_false_test() -> String:
+  int.is_zero(1) |> should.be_false()
+
+pub fn is_positive_true_test() -> String:
+  int.is_positive(1) |> should.be_true()
+
+pub fn is_positive_false_test() -> String:
+  int.is_positive(0) |> should.be_false()
+
+pub fn is_negative_true_test() -> String:
+  int.is_negative(-1) |> should.be_true()
+
+pub fn is_negative_false_test() -> String:
+  int.is_negative(0) |> should.be_false()
+
+// sign
+
+pub fn sign_negative_test() -> String:
+  int.sign(-10) |> should.equal_int(-1)
+
+pub fn sign_zero_test() -> String:
+  int.sign(0) |> should.equal_int(0)
+
+pub fn sign_positive_test() -> String:
+  int.sign(10) |> should.equal_int(1)
+
+// pow
+
+pub fn pow_basic_test() -> String:
+  int.pow(2, 10) |> should.equal_int(1024)
+
+pub fn pow_zero_exp_test() -> String:
+  int.pow(5, 0) |> should.equal_int(1)
+
+pub fn pow_one_exp_test() -> String:
+  int.pow(7, 1) |> should.equal_int(7)
+
+pub fn pow_zero_base_test() -> String:
+  int.pow(0, 5) |> should.equal_int(0)
+
+// gcd
+
+pub fn gcd_basic_test() -> String:
+  int.gcd(12, 8) |> should.equal_int(4)
+
+pub fn gcd_coprime_test() -> String:
+  int.gcd(7, 13) |> should.equal_int(1)
+
+pub fn gcd_same_test() -> String:
+  int.gcd(6, 6) |> should.equal_int(6)
+
+pub fn gcd_zero_test() -> String:
+  int.gcd(5, 0) |> should.equal_int(5)
+
+// lcm
+
+pub fn lcm_basic_test() -> String:
+  int.lcm(4, 6) |> should.equal_int(12)
+
+pub fn lcm_coprime_test() -> String:
+  int.lcm(3, 7) |> should.equal_int(21)
+
+pub fn lcm_zero_test() -> String:
+  int.lcm(0, 5) |> should.equal_int(0)

@@ -1,0 +1,226 @@
+import files
+import string
+import unittest/should
+
+// Uses /tmp/donna_stdlib_files_test as a scratch directory.
+// Each test function creates or cleans up its own state.
+
+// mkdir / is_dir
+
+pub fn mkdir_creates_dir_test() -> String:
+  let path = "/tmp/donna_stdlib_mkdir_test"
+  let _ = shell_rm(path)
+  let code = files.mkdir(path)
+  let ok = code == 0
+  let _ = shell_rm(path)
+  ok |> should.be_true()
+
+pub fn is_dir_true_test() -> String:
+  let path = "/tmp/donna_stdlib_isdir_test"
+  let _ = files.mkdir(path)
+  let result = files.is_dir(path)
+  let _ = shell_rm(path)
+  result |> should.be_true()
+
+pub fn is_dir_false_for_file_test() -> String:
+  let path = "/tmp/donna_stdlib_isdir_file_test.txt"
+  let _ = files.write(path, "x")
+  let result = files.is_dir(path)
+  let _ = files.delete(path)
+  result |> should.be_false()
+
+pub fn is_dir_missing_test() -> String:
+  files.is_dir("/tmp/donna_stdlib_no_such_dir_xyz") |> should.be_false()
+
+// write / read
+
+pub fn write_read_test() -> String:
+  let path = "/tmp/donna_stdlib_write_read.txt"
+  let _ = files.write(path, "hello world")
+  let content = files.read(path)
+  let _ = files.delete(path)
+  string.equal(content, "hello world") |> should.be_true()
+
+pub fn write_returns_zero_test() -> String:
+  let path = "/tmp/donna_stdlib_write_zero.txt"
+  let code = files.write(path, "data")
+  let _ = files.delete(path)
+  code |> should.equal_int(0)
+
+pub fn read_missing_returns_empty_test() -> String:
+  files.read("/tmp/donna_stdlib_no_such_file_xyz.txt") |> should.equal_string("")
+
+pub fn write_overwrite_test() -> String:
+  let path = "/tmp/donna_stdlib_overwrite.txt"
+  let _ = files.write(path, "first")
+  let _ = files.write(path, "second")
+  let content = files.read(path)
+  let _ = files.delete(path)
+  string.equal(content, "second") |> should.be_true()
+
+// append
+
+pub fn append_test() -> String:
+  let path = "/tmp/donna_stdlib_append.txt"
+  let _ = files.write(path, "hello")
+  let _ = files.append(path, " world")
+  let content = files.read(path)
+  let _ = files.delete(path)
+  string.equal(content, "hello world") |> should.be_true()
+
+pub fn append_to_new_file_test() -> String:
+  let path = "/tmp/donna_stdlib_append_new.txt"
+  let _ = files.delete(path)
+  let _ = files.append(path, "appended")
+  let content = files.read(path)
+  let _ = files.delete(path)
+  string.equal(content, "appended") |> should.be_true()
+
+// exists / is_file
+
+pub fn exists_true_test() -> String:
+  let path = "/tmp/donna_stdlib_exists.txt"
+  let _ = files.write(path, "x")
+  let result = files.exists(path)
+  let _ = files.delete(path)
+  result |> should.be_true()
+
+pub fn exists_false_test() -> String:
+  files.exists("/tmp/donna_stdlib_no_such_xyz.txt") |> should.be_false()
+
+pub fn is_file_true_test() -> String:
+  let path = "/tmp/donna_stdlib_isfile.txt"
+  let _ = files.write(path, "x")
+  let result = files.is_file(path)
+  let _ = files.delete(path)
+  result |> should.be_true()
+
+pub fn is_file_false_for_dir_test() -> String:
+  let path = "/tmp/donna_stdlib_isfile_dir"
+  let _ = files.mkdir(path)
+  let result = files.is_file(path)
+  let _ = shell_rm(path)
+  result |> should.be_false()
+
+// delete
+
+pub fn delete_removes_file_test() -> String:
+  let path = "/tmp/donna_stdlib_delete.txt"
+  let _ = files.write(path, "bye")
+  let _ = files.delete(path)
+  files.exists(path) |> should.be_false()
+
+pub fn delete_missing_returns_nonzero_test() -> String:
+  let code = files.delete("/tmp/donna_stdlib_no_such_file_xyz.txt")
+  case code == 0:
+    True -> should.fail("deleting missing file should return non-zero")
+    False -> ""
+
+// copy
+
+pub fn copy_test() -> String:
+  let src = "/tmp/donna_stdlib_copy_src.txt"
+  let dst = "/tmp/donna_stdlib_copy_dst.txt"
+  let _ = files.write(src, "copied content")
+  let _ = files.copy(src, dst)
+  let content = files.read(dst)
+  let _ = files.delete(src)
+  let _ = files.delete(dst)
+  string.equal(content, "copied content") |> should.be_true()
+
+pub fn copy_independent_test() -> String:
+  let src = "/tmp/donna_stdlib_copy_ind_src.txt"
+  let dst = "/tmp/donna_stdlib_copy_ind_dst.txt"
+  let _ = files.write(src, "original")
+  let _ = files.copy(src, dst)
+  let _ = files.delete(src)
+  let content = files.read(dst)
+  let _ = files.delete(dst)
+  string.equal(content, "original") |> should.be_true()
+
+// list_dir
+
+pub fn list_dir_test() -> String:
+  let dir = "/tmp/donna_stdlib_listdir"
+  let _ = shell_rm(dir)
+  let _ = files.mkdir(dir)
+  let _ = files.write(dir <> "/a.txt", "a")
+  let _ = files.write(dir <> "/b.txt", "b")
+  let entries = files.list_dir(dir)
+  let has_a = list_contains(entries, "a.txt")
+  let has_b = list_contains(entries, "b.txt")
+  let _ = files.delete(dir <> "/a.txt")
+  let _ = files.delete(dir <> "/b.txt")
+  let _ = shell_rm(dir)
+  should.be_true(has_a) <> should.be_true(has_b)
+
+pub fn list_dir_empty_test() -> String:
+  let dir = "/tmp/donna_stdlib_listdir_empty"
+  let _ = shell_rm(dir)
+  let _ = files.mkdir(dir)
+  let entries = files.list_dir(dir)
+  let _ = shell_rm(dir)
+  case entries:
+    [] -> ""
+    _ -> should.fail("expected empty listing")
+
+// Path utilities
+
+pub fn join_test() -> String:
+  files.join("src", "main.donna") |> should.equal_string("src/main.donna")
+
+pub fn join_nested_test() -> String:
+  files.join("a/b", "c.txt") |> should.equal_string("a/b/c.txt")
+
+pub fn basename_simple_test() -> String:
+  files.basename("src/main.donna") |> should.equal_string("main.donna")
+
+pub fn basename_no_dir_test() -> String:
+  files.basename("Makefile") |> should.equal_string("Makefile")
+
+pub fn basename_deep_test() -> String:
+  files.basename("a/b/c.txt") |> should.equal_string("c.txt")
+
+pub fn dirname_test() -> String:
+  files.dirname("src/main.donna") |> should.equal_string("src")
+
+pub fn dirname_no_dir_test() -> String:
+  files.dirname("Makefile") |> should.equal_string(".")
+
+pub fn dirname_deep_test() -> String:
+  files.dirname("a/b/c.txt") |> should.equal_string("a/b")
+
+pub fn extension_test() -> String:
+  files.extension("main.donna") |> should.equal_string(".donna")
+
+pub fn extension_c_test() -> String:
+  files.extension("ffi.c") |> should.equal_string(".c")
+
+pub fn extension_none_test() -> String:
+  files.extension("Makefile") |> should.equal_string("")
+
+pub fn drop_extension_test() -> String:
+  files.drop_extension("main.donna") |> should.equal_string("main")
+
+pub fn drop_extension_with_dir_test() -> String:
+  files.drop_extension("src/foo.c") |> should.equal_string("src/foo")
+
+pub fn drop_extension_no_ext_test() -> String:
+  files.drop_extension("Makefile") |> should.equal_string("Makefile")
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Remove a directory (or file) using shell, ignoring errors.
+fn shell_rm(path: String) -> Int:
+  run_cmd("rm -rf " <> path)
+
+@external("c", "donna_ffi_shell_exec")
+fn run_cmd(cmd: String) -> Int
+
+fn list_contains(xs: List(String), s: String) -> Bool:
+  case xs:
+    [] -> False
+    [x, ..rest] ->
+      case string_equal(x, s):
+        True -> True
+        False -> list_contains(rest, s)

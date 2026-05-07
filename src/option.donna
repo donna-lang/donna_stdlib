@@ -1,0 +1,99 @@
+//// Option type and utilities for Donna.
+
+/// The Option type represents a value that may or may not be present.
+pub type Option(a):
+  None
+  Some(a)
+
+/// Return True if the option contains a value.
+///
+/// ```donna
+/// option.is_some(option.Some(42))
+/// ```
+pub fn is_some(opt: Option(a)) -> Bool:
+  case opt:
+    None -> False
+    Some(_) -> True
+
+/// Return True if the option is empty.
+///
+/// ```donna
+/// option.is_none(option.None)
+/// ```
+pub fn is_none(opt: Option(a)) -> Bool:
+  case opt:
+    None -> True
+    Some(_) -> False
+
+/// Unwrap the value, returning default if None.
+///
+/// ```donna
+/// option.unwrap(option.Some(42), 0)
+/// ```
+pub fn unwrap(opt: Option(a), default: a) -> a:
+  case opt:
+    None -> default
+    Some(x) -> x
+
+/// Apply f to the contained value, or return None.
+///
+/// ```donna
+/// option.map(option.Some(2), fn(n: Int) -> n * 2)
+/// ```
+pub fn map(opt: Option(a), f: fn(a) -> b) -> Option(b):
+  case opt:
+    None -> None
+    Some(x) -> Some(f(x))
+
+/// Apply f which itself returns an Option, flattening the result.
+///
+/// ```donna
+/// option.then(option.Some(2), fn(n: Int) -> option.Some(n * 2))
+/// ```
+pub fn then(opt: Option(a), f: fn(a) -> Option(b)) -> Option(b):
+  case opt:
+    None -> None
+    Some(x) -> f(x)
+
+/// Return the first option if it has a value, otherwise return the second.
+///
+/// ```donna
+/// option.or(option.None, option.Some(42))
+/// ```
+pub fn or(opt: Option(a), fallback: Option(a)) -> Option(a):
+  case opt:
+    None -> fallback
+    Some(_) -> opt
+
+/// Return the value if Some, or call f to produce a default.
+///
+/// ```donna
+/// option.lazy_unwrap(option.None, fn() -> 42)
+/// ```
+pub fn lazy_unwrap(opt: Option(a), f: fn() -> a) -> a:
+  case opt:
+    None -> f()
+    Some(x) -> x
+
+/// Filter: return None if the predicate fails.
+///
+/// ```donna
+/// option.filter(option.Some(4), fn(n: Int) -> n > 0)
+/// ```
+pub fn filter(opt: Option(a), f: fn(a) -> Bool) -> Option(a):
+  case opt:
+    None -> None
+    Some(x) ->
+      case f(x):
+        True -> Some(x)
+        False -> None
+
+/// Convert Option to a list of 0 or 1 elements.
+///
+/// ```donna
+/// option.to_list(option.Some(42))
+/// ```
+pub fn to_list(opt: Option(a)) -> List(a):
+  case opt:
+    None -> []
+    Some(x) -> [x]

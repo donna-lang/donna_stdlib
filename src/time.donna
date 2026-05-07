@@ -1,0 +1,26 @@
+//// Monotonic clock utilities.
+////
+//// The values come from the platform monotonic clock, so they are useful for
+//// measuring elapsed time. They are not wall-clock timestamps.
+
+@external("c", "donna_ffi_time_now_ms")
+fn ffi_now_ms() -> Int
+
+@external("c", "donna_ffi_time_now_us")
+fn ffi_now_us() -> Int
+
+/// Return the current monotonic clock value in milliseconds.
+///
+/// ```donna
+/// time.now_ms()
+/// ```
+pub fn now_ms() -> Int:
+  ffi_now_ms()
+
+/// Return the current monotonic clock value in microseconds.
+///
+/// ```donna
+/// time.now_us()
+/// ```
+pub fn now_us() -> Int:
+  ffi_now_us()

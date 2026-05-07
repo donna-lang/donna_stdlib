@@ -1,0 +1,13 @@
+import time
+import unittest/should
+
+pub fn now_ms_returns_positive_monotonic_value_test() -> String:
+  time.now_ms() |> should.be_true()
+
+pub fn now_us_returns_positive_monotonic_value_test() -> String:
+  time.now_us() |> should.be_true()
+
+pub fn now_us_is_at_least_millisecond_precision_test() -> String:
+  let ms = time.now_ms()
+  let us = time.now_us()
+  should.is_true(us >= ms * 1000)

@@ -1,0 +1,149 @@
+//// Integer utilities for Donna.
+
+import donna/option
+
+/// Parse a decimal integer string. Returns Some(n) on success.
+/// Note: uses atoi — always returns Some; invalid strings give 0.
+///
+/// ```donna
+/// int.parse("42")
+/// ```
+pub fn parse(s: String) -> option.Option(Int):
+  option.Some(string_to_int(s))
+
+/// Convert an integer to its string representation.
+///
+/// ```donna
+/// int.to_string(42)
+/// ```
+pub fn to_string(n: Int) -> String:
+  int_to_string(n)
+
+/// Return the absolute value of an integer.
+///
+/// ```donna
+/// int.abs(-5)
+/// ```
+pub fn abs(n: Int) -> Int:
+  case n < 0:
+    True -> 0 - n
+    False -> n
+
+/// Return the minimum of two integers.
+///
+/// ```donna
+/// int.min(3, 7)
+/// ```
+pub fn min(a: Int, b: Int) -> Int:
+  case a <= b:
+    True -> a
+    False -> b
+
+/// Return the maximum of two integers.
+///
+/// ```donna
+/// int.max(3, 7)
+/// ```
+pub fn max(a: Int, b: Int) -> Int:
+  case a >= b:
+    True -> a
+    False -> b
+
+/// Clamp a value between lo and hi (inclusive).
+///
+/// ```donna
+/// int.clamp(12, 0, 10)
+/// ```
+pub fn clamp(n: Int, lo: Int, hi: Int) -> Int:
+  case n < lo:
+    True -> lo
+    False ->
+      case n > hi:
+        True -> hi
+        False -> n
+
+/// Check if an integer is even.
+///
+/// ```donna
+/// int.is_even(4)
+/// ```
+pub fn is_even(n: Int) -> Bool:
+  n % 2 == 0
+
+/// Check if an integer is odd.
+///
+/// ```donna
+/// int.is_odd(3)
+/// ```
+pub fn is_odd(n: Int) -> Bool:
+  n % 2 != 0
+
+/// Check if an integer is zero.
+///
+/// ```donna
+/// int.is_zero(0)
+/// ```
+pub fn is_zero(n: Int) -> Bool:
+  n == 0
+
+/// Check if an integer is positive (> 0).
+///
+/// ```donna
+/// int.is_positive(4)
+/// ```
+pub fn is_positive(n: Int) -> Bool:
+  n > 0
+
+/// Check if an integer is negative (< 0).
+///
+/// ```donna
+/// int.is_negative(-4)
+/// ```
+pub fn is_negative(n: Int) -> Bool:
+  n < 0
+
+/// Return the sign of an integer: -1, 0, or 1.
+///
+/// ```donna
+/// int.sign(-10)
+/// ```
+pub fn sign(n: Int) -> Int:
+  case n < 0:
+    True -> 0 - 1
+    False ->
+      case n > 0:
+        True -> 1
+        False -> 0
+
+/// Compute base raised to the exponent power (non-negative exponent).
+///
+/// ```donna
+/// int.pow(2, 8)
+/// ```
+pub fn pow(base: Int, exp: Int) -> Int:
+  case exp == 0:
+    True -> 1
+    False -> base * pow(base, exp - 1)
+
+/// Compute greatest common divisor (Euclidean algorithm).
+///
+/// ```donna
+/// int.gcd(12, 8)
+/// ```
+pub fn gcd(a: Int, b: Int) -> Int:
+  case b == 0:
+    True -> abs(a)
+    False -> gcd(b, a % b)
+
+/// Compute least common multiple.
+///
+/// ```donna
+/// int.lcm(4, 6)
+/// ```
+pub fn lcm(a: Int, b: Int) -> Int:
+  case a == 0:
+    True -> 0
+    False ->
+      case b == 0:
+        True -> 0
+        False -> abs(a * b) / gcd(a, b)

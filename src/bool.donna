@@ -1,0 +1,71 @@
+//// Boolean utilities for Donna.
+
+/// Negate a boolean value.
+///
+/// ```donna
+/// bool.not(False)
+/// ```
+pub fn not(b: Bool) -> Bool:
+  case b:
+    True -> False
+    False -> True
+
+/// Logical AND.
+///
+/// ```donna
+/// bool.and(True, False)
+/// ```
+pub fn and(a: Bool, b: Bool) -> Bool:
+  case a:
+    True -> b
+    False -> False
+
+/// Logical OR.
+///
+/// ```donna
+/// bool.or(True, False)
+/// ```
+pub fn or(a: Bool, b: Bool) -> Bool:
+  case a:
+    True -> True
+    False -> b
+
+/// Logical XOR (exclusive or).
+///
+/// ```donna
+/// bool.xor(True, False)
+/// ```
+pub fn xor(a: Bool, b: Bool) -> Bool:
+  case a:
+    True -> not(b)
+    False -> b
+
+/// Convert a bool to an integer: True -> 1, False -> 0.
+///
+/// ```donna
+/// bool.to_int(True)
+/// ```
+pub fn to_int(b: Bool) -> Int:
+  case b:
+    True -> 1
+    False -> 0
+
+/// Convert a bool to a string.
+///
+/// ```donna
+/// bool.to_string(False)
+/// ```
+pub fn to_string(b: Bool) -> String:
+  case b:
+    True -> "True"
+    False -> "False"
+
+/// Return a value based on a boolean condition.
+///
+/// ```donna
+/// bool.guard(True, "yes", "no")
+/// ```
+pub fn guard(b: Bool, then_val: a, else_val: a) -> a:
+  case b:
+    True -> then_val
+    False -> else_val

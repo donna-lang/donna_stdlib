@@ -1,0 +1,169 @@
+//// Float utilities for Donna.
+
+/// Convert a float to its string representation.
+///
+/// ```donna
+/// float.to_string(3.14)
+/// ```
+@external("c", "donna_float_to_string")
+pub fn to_string(f: Float) -> String
+
+/// Parse a float string. Invalid strings currently parse as 0.
+///
+/// ```donna
+/// float.parse("3.14")
+/// ```
+@external("c", "donna_float_parse")
+pub fn parse(s: String) -> Float
+
+/// Return the smaller of two floats.
+///
+/// ```donna
+/// float.min(1.0, 2.0)
+/// ```
+@external("c", "donna_float_min")
+pub fn min(a: Float, b: Float) -> Float
+
+/// Return the larger of two floats.
+///
+/// ```donna
+/// float.max(1.0, 2.0)
+/// ```
+@external("c", "donna_float_max")
+pub fn max(a: Float, b: Float) -> Float
+
+/// Clamp a float between lower and upper bounds.
+///
+/// ```donna
+/// float.clamp(12.0, 0.0, 10.0)
+/// ```
+@external("c", "donna_float_clamp")
+pub fn clamp(x: Float, lo: Float, hi: Float) -> Float
+
+/// Return True when the float is greater than zero.
+///
+/// ```donna
+/// float.is_positive(1.0)
+/// ```
+@external("c", "donna_float_is_positive")
+pub fn is_positive(x: Float) -> Bool
+
+/// Return True when the float is less than zero.
+///
+/// ```donna
+/// float.is_negative(-1.0)
+/// ```
+@external("c", "donna_float_is_negative")
+pub fn is_negative(x: Float) -> Bool
+
+/// Return True when the float is exactly zero.
+///
+/// ```donna
+/// float.is_zero(0.0)
+/// ```
+@external("c", "donna_float_is_zero")
+pub fn is_zero(x: Float) -> Bool
+
+/// Return the square root.
+///
+/// ```donna
+/// float.sqrt(9.0)
+/// ```
+@external("c", "sqrt")
+pub fn sqrt(x: Float) -> Float
+
+/// Return the absolute value.
+///
+/// ```donna
+/// float.abs(-3.0)
+/// ```
+@external("c", "fabs")
+pub fn abs(x: Float) -> Float
+
+/// Round downward to the nearest integer-valued float.
+///
+/// ```donna
+/// float.floor(3.8)
+/// ```
+@external("c", "floor")
+pub fn floor(x: Float) -> Float
+
+/// Round upward to the nearest integer-valued float.
+///
+/// ```donna
+/// float.ceil(3.2)
+/// ```
+@external("c", "ceil")
+pub fn ceil(x: Float) -> Float
+
+/// Round to the nearest integer-valued float.
+///
+/// ```donna
+/// float.round(3.5)
+/// ```
+@external("c", "round")
+pub fn round(x: Float) -> Float
+
+/// Raise a base to an exponent.
+///
+/// ```donna
+/// float.pow(2.0, 8.0)
+/// ```
+@external("c", "pow")
+pub fn pow(base: Float, exp: Float) -> Float
+
+/// Return the sine of a value in radians.
+///
+/// ```donna
+/// float.sin(0.0)
+/// ```
+@external("c", "sin")
+pub fn sin(x: Float) -> Float
+
+/// Return the cosine of a value in radians.
+///
+/// ```donna
+/// float.cos(0.0)
+/// ```
+@external("c", "cos")
+pub fn cos(x: Float) -> Float
+
+/// Return the tangent of a value in radians.
+///
+/// ```donna
+/// float.tan(0.0)
+/// ```
+@external("c", "tan")
+pub fn tan(x: Float) -> Float
+
+/// Return the natural logarithm.
+///
+/// ```donna
+/// float.log(10.0)
+/// ```
+@external("c", "log")
+pub fn log(x: Float) -> Float
+
+/// Return the base-2 logarithm.
+///
+/// ```donna
+/// float.log2(8.0)
+/// ```
+@external("c", "log2")
+pub fn log2(x: Float) -> Float
+
+/// Return the base-10 logarithm.
+///
+/// ```donna
+/// float.log10(100.0)
+/// ```
+@external("c", "log10")
+pub fn log10(x: Float) -> Float
+
+/// Return e raised to the given power.
+///
+/// ```donna
+/// float.exp(1.0)
+/// ```
+@external("c", "exp")
+pub fn exp(x: Float) -> Float

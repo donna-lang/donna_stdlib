@@ -1,0 +1,205 @@
+//// Generic association list dictionary.
+////
+//// Keys are compared using a caller-supplied equality function:
+////   for Int keys:    fn(a: Int, b: Int) -> a == b
+////   for String keys: fn(a: String, b: String) -> string.equal(a, b)
+////
+//// All operations are O(n), suitable for small-to-medium maps.
+
+/// An association list: each entry stores a key, value, and pointer to the rest.
+pub type Dict(k, v):
+  Empty
+  Entry(k, v, Dict(k, v))
+
+/// Create an empty dictionary.
+///
+/// ```donna
+/// dict.new()
+/// ```
+pub fn new() -> Dict(k, v):
+  Empty
+
+/// Insert or update a key. If the key already exists (per eq), its value is replaced.
+///
+/// ```donna
+/// dict.insert(dict.new(), "name", "Donna", fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn insert(d: Dict(k, v), key: k, val: v, eq: fn(k, k) -> Bool) -> Dict(k, v):
+  case d:
+    Empty -> Entry(key, val, Empty)
+    Entry(k2, v2, rest) ->
+      case eq(key, k2):
+        True -> Entry(key, val, rest)
+        False -> Entry(k2, v2, insert(rest, key, val, eq))
+
+/// Look up a key, returning the value or a default if not found.
+///
+/// ```donna
+/// dict.get(users, "name", "missing", fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn get(d: Dict(k, v), key: k, default: v, eq: fn(k, k) -> Bool) -> v:
+  case d:
+    Empty -> default
+    Entry(k2, v2, rest) ->
+      case eq(key, k2):
+        True -> v2
+        False -> get(rest, key, default, eq)
+
+/// Return True if the key is present.
+///
+/// ```donna
+/// dict.has_key(users, "name", fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn has_key(d: Dict(k, v), key: k, eq: fn(k, k) -> Bool) -> Bool:
+  case d:
+    Empty -> False
+    Entry(k2, _, rest) ->
+      case eq(key, k2):
+        True -> True
+        False -> has_key(rest, key, eq)
+
+/// Remove a key from the dictionary. No-op if not present.
+///
+/// ```donna
+/// dict.delete(users, "name", fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn delete(d: Dict(k, v), key: k, eq: fn(k, k) -> Bool) -> Dict(k, v):
+  case d:
+    Empty -> Empty
+    Entry(k2, v2, rest) ->
+      case eq(key, k2):
+        True -> rest
+        False -> Entry(k2, v2, delete(rest, key, eq))
+
+/// Return the number of entries.
+///
+/// ```donna
+/// dict.size(users)
+/// ```
+pub fn size(d: Dict(k, v)) -> Int:
+  case d:
+    Empty -> 0
+    Entry(_, _, rest) -> 1 + size(rest)
+
+/// Return True if the dictionary has no entries.
+///
+/// ```donna
+/// dict.is_empty(dict.new())
+/// ```
+pub fn is_empty(d: Dict(k, v)) -> Bool:
+  case d:
+    Empty -> True
+    Entry(_, _, _) -> False
+
+/// Return all keys as a list (insertion order reversed).
+///
+/// ```donna
+/// dict.keys(users)
+/// ```
+pub fn keys(d: Dict(k, v)) -> List(k):
+  case d:
+    Empty -> []
+    Entry(k2, _, rest) -> [k2, ..keys(rest)]
+
+/// Return all values as a list (insertion order reversed).
+///
+/// ```donna
+/// dict.values(users)
+/// ```
+pub fn values(d: Dict(k, v)) -> List(v):
+  case d:
+    Empty -> []
+    Entry(_, v2, rest) -> [v2, ..values(rest)]
+
+/// Convert to a list of key-value pairs.
+///
+/// ```donna
+/// dict.to_list(users)
+/// ```
+pub fn to_list(d: Dict(k, v)) -> List(#(k, v)):
+  case d:
+    Empty -> []
+    Entry(k2, v2, rest) -> [#(k2, v2), ..to_list(rest)]
+
+/// Build a dictionary from a list of key-value pairs.
+/// Later entries in the list take precedence over earlier ones for the same key.
+///
+/// ```donna
+/// dict.from_list([#("name", "Donna")], fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn from_list(pairs: List(#(k, v)), eq: fn(k, k) -> Bool) -> Dict(k, v):
+  case pairs:
+    [] -> Empty
+    [pair, ..rest] ->
+      let d = from_list(rest, eq)
+      let #(k2, v2) = pair
+      insert(d, k2, v2, eq)
+
+/// Merge two dicts: entries in `other` override entries in `base` for duplicate keys.
+///
+/// ```donna
+/// dict.merge(base, overrides, fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn merge(base: Dict(k, v), other: Dict(k, v), eq: fn(k, k) -> Bool) -> Dict(k, v):
+  case other:
+    Empty -> base
+    Entry(k2, v2, rest) -> merge(insert(base, k2, v2, eq), rest, eq)
+
+/// Apply a function to every value, returning a new dict with the same keys.
+///
+/// ```donna
+/// dict.map_values(scores, fn(n: Int) -> n + 1)
+/// ```
+pub fn map_values(d: Dict(k, v), f: fn(v) -> b) -> Dict(k, b):
+  case d:
+    Empty -> Empty
+    Entry(k2, v2, rest) -> Entry(k2, f(v2), map_values(rest, f))
+
+/// Keep only entries where f(key, value) returns True.
+///
+/// ```donna
+/// dict.filter(scores, fn(k: String, v: Int) -> v > 0)
+/// ```
+pub fn filter(d: Dict(k, v), f: fn(k, v) -> Bool) -> Dict(k, v):
+  case d:
+    Empty -> Empty
+    Entry(k2, v2, rest) ->
+      case f(k2, v2):
+        True -> Entry(k2, v2, filter(rest, f))
+        False -> filter(rest, f)
+
+/// Fold over all entries, accumulating a result.
+///
+/// ```donna
+/// dict.fold(scores, 0, fn(acc: Int, k: String, v: Int) -> acc + v)
+/// ```
+pub fn fold(d: Dict(k, v), init: b, f: fn(b, k, v) -> b) -> b:
+  case d:
+    Empty -> init
+    Entry(k2, v2, rest) -> fold(rest, f(init, k2, v2), f)
+
+/// Return all keys satisfying a predicate.
+///
+/// ```donna
+/// dict.find_keys(scores, fn(k: String, v: Int) -> v > 0)
+/// ```
+pub fn find_keys(d: Dict(k, v), f: fn(k, v) -> Bool) -> List(k):
+  case d:
+    Empty -> []
+    Entry(k2, v2, rest) ->
+      case f(k2, v2):
+        True -> [k2, ..find_keys(rest, f)]
+        False -> find_keys(rest, f)
+
+/// Update a key with a function. No-op if the key is not present.
+///
+/// ```donna
+/// dict.update(scores, "total", fn(n: Int) -> n + 1, fn(a: String, b: String) -> string.equal(a, b))
+/// ```
+pub fn update(d: Dict(k, v), key: k, f: fn(v) -> v, eq: fn(k, k) -> Bool) -> Dict(k, v):
+  case d:
+    Empty -> Empty
+    Entry(k2, v2, rest) ->
+      case eq(key, k2):
+        True -> Entry(k2, f(v2), rest)
+        False -> Entry(k2, v2, update(rest, key, f, eq))

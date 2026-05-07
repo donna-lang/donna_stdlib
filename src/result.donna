@@ -1,0 +1,96 @@
+//// Result type and utilities for Donna.
+
+/// The Result type represents either success (Ok) or failure (Error).
+pub type Result(a, e):
+  Ok(a)
+  Error(e)
+
+/// Return True if the result is Ok.
+///
+/// ```donna
+/// result.is_ok(result.Ok(42))
+/// ```
+pub fn is_ok(res: Result(a, e)) -> Bool:
+  case res:
+    Ok(_) -> True
+    Error(_) -> False
+
+/// Return True if the result is an Error.
+///
+/// ```donna
+/// result.is_error(result.Error("no"))
+/// ```
+pub fn is_error(res: Result(a, e)) -> Bool:
+  case res:
+    Ok(_) -> False
+    Error(_) -> True
+
+/// Unwrap the Ok value, returning default if Error.
+///
+/// ```donna
+/// result.unwrap(result.Ok(42), 0)
+/// ```
+pub fn unwrap(res: Result(a, e), default: a) -> a:
+  case res:
+    Ok(x) -> x
+    Error(_) -> default
+
+/// Unwrap the Error value, returning default if Ok.
+///
+/// ```donna
+/// result.unwrap_error(result.Error("no"), "")
+/// ```
+pub fn unwrap_error(res: Result(a, e), default: e) -> e:
+  case res:
+    Ok(_) -> default
+    Error(e) -> e
+
+/// Apply f to the Ok value, leaving Error unchanged.
+///
+/// ```donna
+/// result.map(result.Ok(2), fn(n: Int) -> n * 2)
+/// ```
+pub fn map(res: Result(a, e), f: fn(a) -> b) -> Result(b, e):
+  case res:
+    Ok(x) -> Ok(f(x))
+    Error(e) -> Error(e)
+
+/// Apply f to the Error value, leaving Ok unchanged.
+///
+/// ```donna
+/// result.map_error(result.Error("no"), fn(e: String) -> "error: " <> e)
+/// ```
+pub fn map_error(res: Result(a, e), f: fn(e) -> f) -> Result(a, f):
+  case res:
+    Ok(x) -> Ok(x)
+    Error(e) -> Error(f(e))
+
+/// Chain: apply f which returns a Result, flattening the result.
+///
+/// ```donna
+/// result.then(result.Ok(2), fn(n: Int) -> result.Ok(n * 2))
+/// ```
+pub fn then(res: Result(a, e), f: fn(a) -> Result(b, e)) -> Result(b, e):
+  case res:
+    Ok(x) -> f(x)
+    Error(e) -> Error(e)
+
+/// Return first Ok, or the second result if the first is an Error.
+///
+/// ```donna
+/// result.or(result.Error("no"), result.Ok(42))
+/// ```
+pub fn or(res: Result(a, e), fallback: Result(a, e)) -> Result(a, e):
+  case res:
+    Ok(_) -> res
+    Error(_) -> fallback
+
+/// Convert Result to a list: Ok(x) -> [x], Error(_) -> [].
+///
+/// ```donna
+/// result.to_list(result.Ok(42))
+/// ```
+pub fn to_list(res: Result(a, e)) -> List(a):
+  case res:
+    Ok(x) -> [x]
+    Error(_) -> []

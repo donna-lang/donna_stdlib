@@ -1,0 +1,9 @@
+name = "donna_stdlib"
+version = "0.1.0"
+description = "The Donna standard library"
+licences = ["MIT"]
+repository = { type = "github", user = "donna-lang", repo = "donna_stdlib" }
+links = [{ title = "Docs", href = "https://donna-lang.github.io/donna_stdlib/" }]
+
+[dev-dependencies]
+# unittest = { git = "https://github.com/donna-lang/unittest", version = ">=0.1.0 and <1.0.0" }

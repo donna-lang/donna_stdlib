@@ -1,0 +1,386 @@
+//// String utilities for Donna.
+
+/// Return the number of bytes in a string.
+///
+/// ```donna
+/// string.length("Donna")
+/// ```
+pub fn length(s: String) -> Int:
+  string_length(s)
+
+/// Concatenate two strings.
+///
+/// ```donna
+/// string.concat("Don", "na")
+/// ```
+pub fn concat(a: String, b: String) -> String:
+  a <> b
+
+/// Check if two strings are equal.
+///
+/// ```donna
+/// string.equal("a", "a")
+/// ```
+pub fn equal(a: String, b: String) -> Bool:
+  string_equal(a, b)
+
+/// Check if a string is empty.
+///
+/// ```donna
+/// string.is_empty("")
+/// ```
+pub fn is_empty(s: String) -> Bool:
+  string_length(s) == 0
+
+/// Get the byte value of the character at position i.
+///
+/// ```donna
+/// string.char_at("Donna", 0)
+/// ```
+pub fn char_at(s: String, i: Int) -> Int:
+  char_at(s, i)
+
+/// Get the character (as a 1-byte String) at position i.
+///
+/// ```donna
+/// string.char_str("Donna", 0)
+/// ```
+pub fn char_str(s: String, i: Int) -> String:
+  substring(s, i, 1)
+
+/// Get a substring starting at pos with given length.
+///
+/// ```donna
+/// string.slice("Donna", 1, 3)
+/// ```
+pub fn slice(s: String, pos: Int, len: Int) -> String:
+  substring(s, pos, len)
+
+/// Check if string starts with a given prefix.
+///
+/// ```donna
+/// string.starts_with("Donna", "Don")
+/// ```
+pub fn starts_with(s: String, prefix: String) -> Bool:
+  let plen = string_length(prefix)
+  let slen = string_length(s)
+  case plen > slen:
+    True -> False
+    False -> string_equal(substring(s, 0, plen), prefix)
+
+/// Check if string ends with a given suffix.
+///
+/// ```donna
+/// string.ends_with("Donna", "na")
+/// ```
+pub fn ends_with(s: String, suffix: String) -> Bool:
+  let suflen = string_length(suffix)
+  let slen = string_length(s)
+  case suflen > slen:
+    True -> False
+    False -> string_equal(substring(s, slen - suflen, suflen), suffix)
+
+/// Create a 1-byte string from a character code (byte value).
+///
+/// ```donna
+/// string.char_from_code(65)
+/// ```
+@external("c", "donna_string_char_from_code")
+pub fn char_from_code(n: Int) -> String
+
+/// Convert an Int to its string representation.
+///
+/// ```donna
+/// string.from_int(42)
+/// ```
+pub fn from_int(n: Int) -> String:
+  int_to_string(n)
+
+/// Repeat a string n times.
+///
+/// ```donna
+/// string.repeat("ha", 3)
+/// ```
+pub fn repeat(s: String, n: Int) -> String:
+  repeat_helper(s, n, "")
+
+fn repeat_helper(s: String, n: Int, acc: String) -> String:
+  case n <= 0:
+    True -> acc
+    False -> repeat_helper(s, n - 1, acc <> s)
+
+/// Reverse a string (byte-by-byte).
+///
+/// ```donna
+/// string.reverse("abc")
+/// ```
+pub fn reverse(s: String) -> String:
+  reverse_helper(s, string_length(s) - 1, "")
+
+fn reverse_helper(s: String, i: Int, acc: String) -> String:
+  case i < 0:
+    True -> acc
+    False ->
+      let c = substring(s, i, 1)
+      reverse_helper(s, i - 1, acc <> c)
+
+/// Return True if s contains sub as a substring.
+///
+/// ```donna
+/// string.contains("hello Donna", "Donna")
+/// ```
+pub fn contains(s: String, sub: String) -> Bool:
+  index_of(s, sub) >= 0
+
+/// Return the index of the first occurrence of sub in s, or -1 if not found.
+///
+/// ```donna
+/// string.index_of("hello Donna", "Donna")
+/// ```
+pub fn index_of(s: String, sub: String) -> Int:
+  index_of_from(s, sub, 0)
+
+/// Return the index of sub in s at or after from, or -1 if not found.
+///
+/// ```donna
+/// string.index_of_from("abcabc", "abc", 1)
+/// ```
+pub fn index_of_from(s: String, sub: String, from: Int) -> Int:
+  let slen = string_length(s)
+  let sublen = string_length(sub)
+  case from + sublen > slen:
+    True -> -1
+    False ->
+      case string_equal(substring(s, from, sublen), sub):
+        True -> from
+        False -> index_of_from(s, sub, from + 1)
+
+/// Split a string by a separator. Returns list of parts.
+///
+/// ```donna
+/// string.split("a,b,c", ",")
+/// ```
+pub fn split(s: String, sep: String) -> List(String):
+  let slen = string_length(s)
+  let seplen = string_length(sep)
+  case seplen == 0:
+    True -> [s]
+    False -> split_helper(s, sep, slen, seplen, 0, 0, [])
+
+fn split_helper(s: String, sep: String, slen: Int, seplen: Int, start: Int, i: Int, acc: List(String)) -> List(String):
+  case i + seplen > slen:
+    True ->
+      let part = substring(s, start, slen - start)
+      list_reverse([part, ..acc])
+    False ->
+      case string_equal(substring(s, i, seplen), sep):
+        True ->
+          let part = substring(s, start, i - start)
+          split_helper(s, sep, slen, seplen, i + seplen, i + seplen, [part, ..acc])
+        False ->
+          split_helper(s, sep, slen, seplen, start, i + 1, acc)
+
+fn list_reverse(lst: List(String)) -> List(String):
+  list_reverse_helper(lst, [])
+
+fn list_reverse_helper(lst: List(String), acc: List(String)) -> List(String):
+  case lst:
+    [] -> acc
+    [h, ..t] -> list_reverse_helper(t, [h, ..acc])
+
+/// Remove leading whitespace (space, tab, carriage return, newline).
+///
+/// ```donna
+/// string.trim_start("  Donna")
+/// ```
+pub fn trim_start(s: String) -> String:
+  trim_start_from(s, 0, string_length(s))
+
+fn trim_start_from(s: String, i: Int, slen: Int) -> String:
+  case i >= slen:
+    True -> ""
+    False ->
+      case is_ws(substring(s, i, 1)):
+        True -> trim_start_from(s, i + 1, slen)
+        False -> substring(s, i, slen - i)
+
+/// Remove trailing whitespace.
+///
+/// ```donna
+/// string.trim_end("Donna  ")
+/// ```
+pub fn trim_end(s: String) -> String:
+  trim_end_to(s, string_length(s) - 1)
+
+fn trim_end_to(s: String, i: Int) -> String:
+  case i < 0:
+    True -> ""
+    False ->
+      case is_ws(substring(s, i, 1)):
+        True -> trim_end_to(s, i - 1)
+        False -> substring(s, 0, i + 1)
+
+/// Remove leading and trailing whitespace.
+///
+/// ```donna
+/// string.trim("  Donna  ")
+/// ```
+pub fn trim(s: String) -> String:
+  trim_end(trim_start(s))
+
+fn is_ws(c: String) -> Bool:
+  case c == " ":
+    True -> True
+    False ->
+      case c == "\t":
+        True -> True
+        False ->
+          case c == "\r":
+            True -> True
+            False -> c == "\n"
+
+/// Replace all occurrences of from with to in s.
+///
+/// ```donna
+/// string.replace("hello world", "world", "Donna")
+/// ```
+pub fn replace(s: String, from: String, to: String) -> String:
+  let slen = string_length(s)
+  let flen = string_length(from)
+  case flen == 0:
+    True -> s
+    False -> replace_helper(s, from, to, slen, flen, 0, 0, "")
+
+fn replace_helper(s: String, from: String, to: String, slen: Int, flen: Int, start: Int, i: Int, acc: String) -> String:
+  case i + flen > slen:
+    True ->
+      acc <> substring(s, start, slen - start)
+    False ->
+      case string_equal(substring(s, i, flen), from):
+        True ->
+          let piece = substring(s, start, i - start)
+          replace_helper(s, from, to, slen, flen, i + flen, i + flen, acc <> piece <> to)
+        False ->
+          replace_helper(s, from, to, slen, flen, start, i + 1, acc)
+
+/// Join a list of strings with a separator between each element.
+///
+/// ```donna
+/// string.join(["a", "b"], ",")
+/// ```
+pub fn join(parts: List(String), sep: String) -> String:
+  case parts:
+    [] -> ""
+    [x] -> x
+    [x, ..rest] -> x <> sep <> join(rest, sep)
+
+/// Pad a string on the left to at least `width` characters using `ch`.
+///
+/// ```donna
+/// string.pad_left("42", 5, "0")
+/// ```
+pub fn pad_left(s: String, width: Int, ch: String) -> String:
+  let n = string_length(s)
+  case n >= width:
+    True -> s
+    False -> repeat(ch, width - n) <> s
+
+/// Return True if the string contains only digits (ASCII 0-9).
+///
+/// ```donna
+/// string.is_digits("123")
+/// ```
+pub fn is_digits(s: String) -> Bool:
+  let len = string_length(s)
+  case len == 0:
+    True -> False
+    False -> all_digits(s, 0, len)
+
+fn all_digits(s: String, i: Int, len: Int) -> Bool:
+  case i == len:
+    True -> True
+    False ->
+      let c = char_at(s, i)
+      case c < 48:
+        True -> False
+        False ->
+          case c > 57:
+            True -> False
+            False -> all_digits(s, i + 1, len)
+
+/// Parse a string as an integer. Returns 0 if the string is not a valid integer.
+///
+/// ```donna
+/// string.to_int("42")
+/// ```
+pub fn to_int(s: String) -> Int:
+  let trimmed = trim_start_from(s, 0, string_length(s))
+  let tlen = string_length(trimmed)
+  case tlen == 0:
+    True -> 0
+    False ->
+      let first = substring(trimmed, 0, 1)
+      case first == "-":
+        True -> 0 - parse_digits(trimmed, 1, tlen, 0)
+        False -> parse_digits(trimmed, 0, tlen, 0)
+
+fn parse_digits(s: String, i: Int, len: Int, acc: Int) -> Int:
+  case i >= len:
+    True -> acc
+    False ->
+      let c = char_at(s, i)
+      let digit = c - 48
+      case digit < 0:
+        True -> acc
+        False ->
+          case digit > 9:
+            True -> acc
+            False -> parse_digits(s, i + 1, len, acc * 10 + digit)
+
+/// Convert all ASCII uppercase letters in a string to lowercase.
+///
+/// ```donna
+/// string.lowercase("DONNA")
+/// ```
+pub fn lowercase(s: String) -> String:
+  lowercase_helper(s, 0, string_length(s), "")
+
+fn lowercase_helper(s: String, i: Int, n: Int, acc: String) -> String:
+  case i >= n:
+    True -> acc
+    False ->
+      let c = char_at(s, i)
+      let out = case c >= 65 && c <= 90:
+        True -> char_from_code(c + 32)
+        False -> char_str(s, i)
+      lowercase_helper(s, i + 1, n, acc <> out)
+
+/// Convert a string to a URL-friendly slug: lowercase, spaces become hyphens,
+/// non-alphanumeric characters (except hyphens) are dropped.
+///
+/// ```donna
+/// string.to_slug("Hello Donna!")
+/// ```
+pub fn to_slug(s: String) -> String:
+  slug_helper(lowercase(s), 0, string_length(s), "")
+
+fn slug_helper(s: String, i: Int, n: Int, acc: String) -> String:
+  case i >= n:
+    True -> acc
+    False ->
+      let c = char_at(s, i)
+      let out = case c == 32:
+        True -> "-"
+        False ->
+          case is_slug_char(c):
+            True -> char_str(s, i)
+            False -> ""
+      slug_helper(s, i + 1, n, acc <> out)
+
+fn is_slug_char(c: Int) -> Bool:
+  case c >= 97 && c <= 122:
+    True -> True
+    False ->
+      case c >= 48 && c <= 57:
+        True -> True
+        False -> c == 45

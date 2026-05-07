@@ -1,0 +1,92 @@
+//// Shell execution utilities.
+
+@external("c", "donna_ffi_shell_exec")
+fn ffi_exec(cmd: String) -> Int
+
+@external("c", "donna_ffi_shell_capture")
+fn ffi_capture(cmd: String) -> String
+
+@external("c", "donna_rt_getenv")
+fn ffi_getenv(name: String) -> String
+
+@external("c", "donna_rt_flush")
+fn ffi_flush() -> Int
+
+/// Get the value of an environment variable. Returns "" if not set.
+///
+/// ```donna
+/// shell.getenv("HOME")
+/// ```
+pub fn getenv(name: String) -> String:
+  ffi_getenv(name)
+
+/// Flush stdout — ensures all buffered output is written before exec.
+///
+/// ```donna
+/// shell.flush()
+/// ```
+pub fn flush() -> Int:
+  ffi_flush()
+
+/// Run a raw shell command string. Returns the exit code.
+///
+/// ```donna
+/// shell.run("true")
+/// ```
+pub fn run(cmd: String) -> Int:
+  ffi_exec(cmd)
+
+/// Capture the stdout of a raw shell command. Returns the output as a string.
+///
+/// ```donna
+/// shell.capture("printf hello")
+/// ```
+pub fn capture(cmd: String) -> String:
+  ffi_capture(cmd)
+
+/// Execute a command with a list of arguments. Returns the exit code.
+///
+/// ```donna
+/// shell.exec("printf", ["hello"])
+/// ```
+pub fn exec(cmd: String, args: List(String)) -> Int:
+  let full = build_cmd(cmd, args)
+  ffi_exec(full)
+
+/// Capture the stdout of a command with a list of arguments.
+///
+/// ```donna
+/// shell.output("printf", ["hello"])
+/// ```
+pub fn output(cmd: String, args: List(String)) -> String:
+  let full = build_cmd(cmd, args)
+  ffi_capture(full)
+
+/// Capture the stdout and stderr of a command with a list of arguments.
+///
+/// ```donna
+/// shell.output_with_err("sh", ["-c", "echo err >&2"])
+/// ```
+pub fn output_with_err(cmd: String, args: List(String)) -> String:
+  let full = build_cmd(cmd, args) <> " 2>&1"
+  ffi_capture(full)
+
+/// Execute a command in a specific working directory. Returns the exit code.
+///
+/// ```donna
+/// shell.exec_in("pwd", [], "/tmp")
+/// ```
+pub fn exec_in(cmd: String, args: List(String), dir: String) -> Int:
+  let full = "cd " <> dir <> " && " <> build_cmd(cmd, args)
+  ffi_exec(full)
+
+fn build_cmd(cmd: String, args: List(String)) -> String:
+  case args:
+    [] -> cmd
+    _ -> cmd <> " " <> join_args(args)
+
+fn join_args(args: List(String)) -> String:
+  case args:
+    [] -> ""
+    [x] -> x
+    [x, ..rest] -> x <> " " <> join_args(rest)

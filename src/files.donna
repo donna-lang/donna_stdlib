@@ -1,0 +1,220 @@
+//// File system utilities.
+
+@external("c", "donna_ffi_file_read")
+fn ffi_read(path: String) -> String
+
+@external("c", "donna_ffi_file_write")
+fn ffi_write(path: String, content: String) -> Int
+
+@external("c", "donna_ffi_file_append")
+fn ffi_append(path: String, content: String) -> Int
+
+@external("c", "donna_ffi_file_exists")
+fn ffi_exists(path: String) -> Int
+
+@external("c", "donna_ffi_file_is_file")
+fn ffi_is_file(path: String) -> Int
+
+@external("c", "donna_ffi_file_is_dir")
+fn ffi_is_dir(path: String) -> Int
+
+@external("c", "donna_ffi_file_mkdir")
+fn ffi_mkdir(path: String) -> Int
+
+@external("c", "donna_ffi_file_delete")
+fn ffi_delete(path: String) -> Int
+
+@external("c", "donna_ffi_file_copy")
+fn ffi_copy(src: String, dst: String) -> Int
+
+@external("c", "donna_ffi_file_list_dir")
+fn ffi_list_dir(path: String) -> String
+
+/// Read the entire contents of a file. Returns "" if the file does not exist.
+///
+/// ```donna
+/// files.read("README.md")
+/// ```
+pub fn read(path: String) -> String:
+  ffi_read(path)
+
+/// Write content to a file, overwriting any existing content.
+/// Returns 0 on success, non-zero on error.
+///
+/// ```donna
+/// files.write("out.txt", "hello")
+/// ```
+pub fn write(path: String, content: String) -> Int:
+  ffi_write(path, content)
+
+/// Append content to a file.
+/// Returns 0 on success, non-zero on error.
+///
+/// ```donna
+/// files.append("out.txt", "\nagain")
+/// ```
+pub fn append(path: String, content: String) -> Int:
+  ffi_append(path, content)
+
+/// Return True if the path exists (file or directory).
+///
+/// ```donna
+/// files.exists("out.txt")
+/// ```
+pub fn exists(path: String) -> Bool:
+  ffi_exists(path) == 1
+
+/// Return True if the path is a regular file.
+///
+/// ```donna
+/// files.is_file("out.txt")
+/// ```
+pub fn is_file(path: String) -> Bool:
+  ffi_is_file(path) == 1
+
+/// Return True if the path is a directory.
+///
+/// ```donna
+/// files.is_dir("src")
+/// ```
+pub fn is_dir(path: String) -> Bool:
+  ffi_is_dir(path) == 1
+
+/// Create a directory. Returns 0 on success, non-zero on error.
+///
+/// ```donna
+/// files.mkdir("tmp")
+/// ```
+pub fn mkdir(path: String) -> Int:
+  ffi_mkdir(path)
+
+/// Delete a file. Returns 0 on success, non-zero on error.
+///
+/// ```donna
+/// files.delete("out.txt")
+/// ```
+pub fn delete(path: String) -> Int:
+  ffi_delete(path)
+
+/// Copy a file from src to dst. Returns 0 on success, non-zero on error.
+///
+/// ```donna
+/// files.copy("in.txt", "out.txt")
+/// ```
+pub fn copy(src: String, dst: String) -> Int:
+  ffi_copy(src, dst)
+
+/// List the entries in a directory. Returns a list of entry names (not full paths).
+///
+/// ```donna
+/// files.list_dir("src")
+/// ```
+pub fn list_dir(path: String) -> List(String):
+  let raw = ffi_list_dir(path)
+  case string_length(raw) == 0:
+    True -> []
+    False -> split_lines(raw, 0, 0, [])
+
+fn split_lines(s: String, start: Int, i: Int, acc: List(String)) -> List(String):
+  let len = string_length(s)
+  case i == len:
+    True ->
+      case i == start:
+        True -> reverse(acc)
+        False -> reverse([substring(s, start, i - start), ..acc])
+    False ->
+      case char_at(s, i) == 10:
+        True -> split_lines(s, i + 1, i + 1, [substring(s, start, i - start), ..acc])
+        False -> split_lines(s, start, i + 1, acc)
+
+fn reverse(xs: List(String)) -> List(String):
+  reverse_acc(xs, [])
+
+fn reverse_acc(xs: List(String), acc: List(String)) -> List(String):
+  case xs:
+    [] -> acc
+    [x, ..rest] -> reverse_acc(rest, [x, ..acc])
+
+// ── Path utilities ────────────────────────────────────────────────────────────
+
+/// Join two path segments with a "/" separator.
+///
+/// ```donna
+/// files.join("src", "main.donna")
+/// ```
+pub fn join(a: String, b: String) -> String:
+  a <> "/" <> b
+
+/// Return the final component of a path (the filename).
+///
+/// ```donna
+/// files.basename("src/main.donna")
+/// ```
+pub fn basename(path: String) -> String:
+  last_segment(path, 0, 0)
+
+fn last_segment(s: String, start: Int, i: Int) -> String:
+  let len = string_length(s)
+  case i == len:
+    True -> substring(s, start, len - start)
+    False ->
+      case char_at(s, i) == 47:
+        True -> last_segment(s, i + 1, i + 1)
+        False -> last_segment(s, start, i + 1)
+
+/// Return the directory component of a path (everything before the last "/").
+/// Returns "." if there is no directory component.
+///
+/// ```donna
+/// files.dirname("src/main.donna")
+/// ```
+pub fn dirname(path: String) -> String:
+  let last_slash = find_last_slash(path, string_length(path) - 1)
+  case last_slash == -1:
+    True -> "."
+    False -> substring(path, 0, last_slash)
+
+fn find_last_slash(s: String, i: Int) -> Int:
+  case i < 0:
+    True -> -1
+    False ->
+      case char_at(s, i) == 47:
+        True -> i
+        False -> find_last_slash(s, i - 1)
+
+/// Return the file extension including the dot (e.g. ".donna"), or "" if none.
+///
+/// ```donna
+/// files.extension("src/main.donna")
+/// ```
+pub fn extension(path: String) -> String:
+  let base = basename(path)
+  let dot = find_last_dot(base, string_length(base) - 1)
+  case dot == -1:
+    True -> ""
+    False -> substring(base, dot, string_length(base) - dot)
+
+/// Return the path with the extension removed.
+///
+/// ```donna
+/// files.drop_extension("src/main.donna")
+/// ```
+pub fn drop_extension(path: String) -> String:
+  let base = basename(path)
+  let dir = dirname(path)
+  let dot = find_last_dot(base, string_length(base) - 1)
+  case dot == -1:
+    True -> path
+    False ->
+      let stem = substring(base, 0, dot)
+      case string_equal(dir, "."):
+        True -> stem
+        False -> dir <> "/" <> stem
+
+fn find_last_dot(s: String, i: Int) -> Int:
+  case i < 0:
+    True -> -1
+    False ->
+      case char_at(s, i) == 46:
+        True -> i
+        False -> find_last_dot(s, i - 1)

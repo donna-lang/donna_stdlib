@@ -1,0 +1,241 @@
+import list
+import unittest/should
+
+// length
+
+pub fn length_empty_test() -> String:
+  list.length([]) |> should.equal_int(0)
+
+pub fn length_basic_test() -> String:
+  list.length([1, 2, 3]) |> should.equal_int(3)
+
+// head / tail
+
+pub fn head_test() -> String:
+  list.head([10, 20, 30], 0) |> should.equal_int(10)
+
+pub fn head_empty_test() -> String:
+  list.head([], 99) |> should.equal_int(99)
+
+pub fn tail_test() -> String:
+  case list.tail([1, 2, 3]):
+    [a, b] ->
+      should.equal_int(a, 2)
+      <> should.equal_int(b, 3)
+    _ -> should.fail("expected 2 elements")
+
+pub fn tail_empty_test() -> String:
+  case list.tail([]):
+    [] -> ""
+    _ -> should.fail("expected empty list")
+
+// is_empty
+
+pub fn is_empty_true_test() -> String:
+  list.is_empty([]) |> should.be_true()
+
+pub fn is_empty_false_test() -> String:
+  list.is_empty([1]) |> should.be_false()
+
+// append
+
+pub fn append_test() -> String:
+  case list.append([1, 2], [3, 4]):
+    [a, b, c, d] ->
+      should.equal_int(a, 1)
+      <> should.equal_int(b, 2)
+      <> should.equal_int(c, 3)
+      <> should.equal_int(d, 4)
+    _ -> should.fail("expected 4 elements")
+
+pub fn append_empty_left_test() -> String:
+  list.length(list.append([], [1, 2])) |> should.equal_int(2)
+
+pub fn append_empty_right_test() -> String:
+  list.length(list.append([1, 2], [])) |> should.equal_int(2)
+
+// reverse
+
+pub fn reverse_test() -> String:
+  case list.reverse([1, 2, 3]):
+    [a, b, c] ->
+      should.equal_int(a, 3)
+      <> should.equal_int(b, 2)
+      <> should.equal_int(c, 1)
+    _ -> should.fail("expected 3 elements")
+
+pub fn reverse_empty_test() -> String:
+  list.length(list.reverse([])) |> should.equal_int(0)
+
+// sum
+
+pub fn sum_test() -> String:
+  list.sum([1, 2, 3, 4]) |> should.equal_int(10)
+
+pub fn sum_empty_test() -> String:
+  list.sum([]) |> should.equal_int(0)
+
+// nth
+
+pub fn nth_test() -> String:
+  list.nth([10, 20, 30], 1, 0) |> should.equal_int(20)
+
+pub fn nth_out_of_bounds_test() -> String:
+  list.nth([10, 20], 5, 99) |> should.equal_int(99)
+
+// take / drop
+
+pub fn take_test() -> String:
+  case list.take([1, 2, 3, 4], 2):
+    [a, b] ->
+      should.equal_int(a, 1)
+      <> should.equal_int(b, 2)
+    _ -> should.fail("expected 2 elements")
+
+pub fn take_more_than_length_test() -> String:
+  list.length(list.take([1, 2], 10)) |> should.equal_int(2)
+
+pub fn drop_test() -> String:
+  case list.drop([1, 2, 3, 4], 2):
+    [a, b] ->
+      should.equal_int(a, 3)
+      <> should.equal_int(b, 4)
+    _ -> should.fail("expected 2 elements")
+
+pub fn drop_all_test() -> String:
+  list.length(list.drop([1, 2], 10)) |> should.equal_int(0)
+
+// repeat / range
+
+pub fn repeat_test() -> String:
+  case list.repeat(7, 3):
+    [a, b, c] ->
+      should.equal_int(a, 7)
+      <> should.equal_int(b, 7)
+      <> should.equal_int(c, 7)
+    _ -> should.fail("expected 3 elements")
+
+pub fn range_test() -> String:
+  case list.range(0, 4):
+    [a, b, c, d] ->
+      should.equal_int(a, 0)
+      <> should.equal_int(b, 1)
+      <> should.equal_int(c, 2)
+      <> should.equal_int(d, 3)
+    _ -> should.fail("expected 4 elements")
+
+pub fn range_empty_test() -> String:
+  list.length(list.range(5, 5)) |> should.equal_int(0)
+
+// contains_int
+
+pub fn contains_int_true_test() -> String:
+  list.contains_int([1, 2, 3], 2) |> should.be_true()
+
+pub fn contains_int_false_test() -> String:
+  list.contains_int([1, 2, 3], 9) |> should.be_false()
+
+// minimum / maximum
+
+pub fn minimum_test() -> String:
+  list.minimum([3, 1, 4, 1, 5], 0) |> should.equal_int(1)
+
+pub fn maximum_test() -> String:
+  list.maximum([3, 1, 4, 1, 5], 0) |> should.equal_int(5)
+
+// is_sorted
+
+pub fn is_sorted_true_test() -> String:
+  list.is_sorted([1, 2, 3, 4]) |> should.be_true()
+
+pub fn is_sorted_false_test() -> String:
+  list.is_sorted([1, 3, 2]) |> should.be_false()
+
+pub fn is_sorted_empty_test() -> String:
+  list.is_sorted([]) |> should.be_true()
+
+// map
+
+pub fn map_test() -> String:
+  case list.map([1, 2, 3], fn(x: Int) -> x * 2):
+    [a, b, c] ->
+      should.equal_int(a, 2)
+      <> should.equal_int(b, 4)
+      <> should.equal_int(c, 6)
+    _ -> should.fail("expected 3 elements")
+
+// filter
+
+pub fn filter_test() -> String:
+  case list.filter([1, 2, 3, 4, 5], fn(x: Int) -> x % 2 == 0):
+    [a, b] ->
+      should.equal_int(a, 2)
+      <> should.equal_int(b, 4)
+    _ -> should.fail("expected 2 elements")
+
+// fold
+
+pub fn fold_test() -> String:
+  list.fold([1, 2, 3, 4], 0, fn(acc: Int, x: Int) -> acc + x)
+  |> should.equal_int(10)
+
+pub fn fold_right_test() -> String:
+  list.fold_right([1, 2, 3], 0, fn(x: Int, acc: Int) -> x + acc)
+  |> should.equal_int(6)
+
+// any / all
+
+pub fn any_true_test() -> String:
+  list.any([1, 2, 3], fn(x: Int) -> x > 2) |> should.be_true()
+
+pub fn any_false_test() -> String:
+  list.any([1, 2, 3], fn(x: Int) -> x > 9) |> should.be_false()
+
+pub fn all_true_test() -> String:
+  list.all([2, 4, 6], fn(x: Int) -> x % 2 == 0) |> should.be_true()
+
+pub fn all_false_test() -> String:
+  list.all([2, 3, 6], fn(x: Int) -> x % 2 == 0) |> should.be_false()
+
+// find
+
+pub fn find_test() -> String:
+  list.find([1, 2, 3], fn(x: Int) -> x > 1, 0) |> should.equal_int(2)
+
+pub fn find_not_found_test() -> String:
+  list.find([1, 2, 3], fn(x: Int) -> x > 9, 99) |> should.equal_int(99)
+
+// count
+
+pub fn count_test() -> String:
+  list.count([1, 2, 3, 4, 5], fn(x: Int) -> x % 2 == 0)
+  |> should.equal_int(2)
+
+// flatten
+
+pub fn flatten_test() -> String:
+  list.flatten([[1, 2], [3], [4, 5]])
+  |> list.length()
+  |> should.equal_int(5)
+
+// flat_map
+
+pub fn flat_map_test() -> String:
+  list.flat_map([1, 2, 3], fn(x: Int) -> [x, x * 10])
+  |> list.length()
+  |> should.equal_int(6)
+
+// zip_with
+
+pub fn zip_with_test() -> String:
+  case list.zip_with([1, 2, 3], [10, 20, 30], fn(a: Int, b: Int) -> a + b):
+    [a, b, c] ->
+      should.equal_int(a, 11)
+      <> should.equal_int(b, 22)
+      <> should.equal_int(c, 33)
+    _ -> should.fail("expected 3 elements")
+
+pub fn zip_with_unequal_test() -> String:
+  list.zip_with([1, 2, 3], [10, 20], fn(a: Int, b: Int) -> a + b)
+  |> list.length()
+  |> should.equal_int(2)

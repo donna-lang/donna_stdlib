@@ -1,0 +1,365 @@
+//// List utilities for Donna.
+
+import donna/string
+
+/// Return the number of elements in a list.
+///
+/// ```donna
+/// list.length([1, 2, 3])
+/// ```
+pub fn length(xs: List(a)) -> Int:
+  case xs:
+    [] -> 0
+    [_, ..rest] -> 1 + length(rest)
+
+/// Get the first element of a list, or a default if empty.
+///
+/// ```donna
+/// list.head([1, 2, 3], 0)
+/// ```
+pub fn head(xs: List(a), default: a) -> a:
+  case xs:
+    [] -> default
+    [x, .._] -> x
+
+/// Get all elements after the first, or empty list if empty.
+///
+/// ```donna
+/// list.tail([1, 2, 3])
+/// ```
+pub fn tail(xs: List(a)) -> List(a):
+  case xs:
+    [] -> []
+    [_, ..rest] -> rest
+
+/// Check if a list is empty.
+///
+/// ```donna
+/// list.is_empty([])
+/// ```
+pub fn is_empty(xs: List(a)) -> Bool:
+  case xs:
+    [] -> True
+    _ -> False
+
+/// Append two lists together.
+///
+/// ```donna
+/// list.append([1, 2], [3])
+/// ```
+pub fn append(xs: List(a), ys: List(a)) -> List(a):
+  case xs:
+    [] -> ys
+    [x, ..rest] -> [x, ..append(rest, ys)]
+
+/// Reverse a list.
+///
+/// ```donna
+/// list.reverse([1, 2, 3])
+/// ```
+pub fn reverse(xs: List(a)) -> List(a):
+  reverse_helper(xs, [])
+
+fn reverse_helper(xs: List(a), acc: List(a)) -> List(a):
+  case xs:
+    [] -> acc
+    [x, ..rest] -> reverse_helper(rest, [x, ..acc])
+
+/// Sum a list of integers.
+///
+/// ```donna
+/// list.sum([1, 2, 3])
+/// ```
+pub fn sum(xs: List(Int)) -> Int:
+  case xs:
+    [] -> 0
+    [x, ..rest] -> x + sum(rest)
+
+/// Get the nth element (0-indexed), or default if out of bounds.
+///
+/// ```donna
+/// list.nth([10, 20], 1, 0)
+/// ```
+pub fn nth(xs: List(a), n: Int, default: a) -> a:
+  case xs:
+    [] -> default
+    [x, ..rest] ->
+      case n == 0:
+        True -> x
+        False -> nth(rest, n - 1, default)
+
+/// Flatten a list of lists.
+///
+/// ```donna
+/// list.flatten([[1, 2], [3]])
+/// ```
+pub fn flatten(xs: List(List(a))) -> List(a):
+  case xs:
+    [] -> []
+    [ys, ..rest] -> append(ys, flatten(rest))
+
+/// Take the first n elements.
+///
+/// ```donna
+/// list.take([1, 2, 3], 2)
+/// ```
+pub fn take(xs: List(a), n: Int) -> List(a):
+  case n <= 0:
+    True -> []
+    False ->
+      case xs:
+        [] -> []
+        [x, ..rest] -> [x, ..take(rest, n - 1)]
+
+/// Drop the first n elements.
+///
+/// ```donna
+/// list.drop([1, 2, 3], 1)
+/// ```
+pub fn drop(xs: List(a), n: Int) -> List(a):
+  case n <= 0:
+    True -> xs
+    False ->
+      case xs:
+        [] -> []
+        [_, ..rest] -> drop(rest, n - 1)
+
+/// Create a list of n copies of a value.
+///
+/// ```donna
+/// list.repeat("x", 3)
+/// ```
+pub fn repeat(val: a, n: Int) -> List(a):
+  case n <= 0:
+    True -> []
+    False -> [val, ..repeat(val, n - 1)]
+
+/// Create a list of integers from start to end (exclusive).
+///
+/// ```donna
+/// list.range(0, 3)
+/// ```
+pub fn range(start: Int, end: Int) -> List(Int):
+  case start >= end:
+    True -> []
+    False -> [start, ..range(start + 1, end)]
+
+/// Check if a list contains an integer value.
+///
+/// ```donna
+/// list.contains_int([1, 2, 3], 2)
+/// ```
+pub fn contains_int(xs: List(Int), val: Int) -> Bool:
+  case xs:
+    [] -> False
+    [x, ..rest] ->
+      case x == val:
+        True -> True
+        False -> contains_int(rest, val)
+
+/// Check if a list contains a string value.
+///
+/// ```donna
+/// list.contains_str(["a", "b"], "b")
+/// ```
+pub fn contains_str(xs: List(String), val: String) -> Bool:
+  case xs:
+    [] -> False
+    [x, ..rest] ->
+      case string.equal(x, val):
+        True -> True
+        False -> contains_str(rest, val)
+
+/// Zip two lists into a list of pairs (as 2-tuples).
+///
+/// ```donna
+/// list.zip_length(["a", "b"])
+/// ```
+pub fn zip_length(xs: List(a)) -> Int:
+  length(xs)
+
+/// Get the minimum of a list of integers (or default if empty).
+///
+/// ```donna
+/// list.minimum([3, 1, 4], 0)
+/// ```
+pub fn minimum(xs: List(Int), default: Int) -> Int:
+  case xs:
+    [] -> default
+    [x, ..rest] ->
+      case rest:
+        [] -> x
+        _ ->
+          let rest_min = minimum(rest, default)
+          case x < rest_min:
+            True -> x
+            False -> rest_min
+
+/// Get the maximum of a list of integers (or default if empty).
+///
+/// ```donna
+/// list.maximum([3, 1, 4], 0)
+/// ```
+pub fn maximum(xs: List(Int), default: Int) -> Int:
+  case xs:
+    [] -> default
+    [x, ..rest] ->
+      case rest:
+        [] -> x
+        _ ->
+          let rest_max = maximum(rest, default)
+          case x > rest_max:
+            True -> x
+            False -> rest_max
+
+/// Check if a list of integers is sorted in ascending order.
+///
+/// ```donna
+/// list.is_sorted([1, 2, 3])
+/// ```
+pub fn is_sorted(xs: List(Int)) -> Bool:
+  case xs:
+    [] -> True
+    [_] -> True
+    [a, b, ..rest] ->
+      case a <= b:
+        True -> is_sorted([b, ..rest])
+        False -> False
+
+/// Apply a function to every element, returning a new list.
+///
+/// ```donna
+/// list.map([1, 2, 3], fn(n: Int) -> n * 2)
+/// ```
+pub fn map(xs: List(a), f: fn(a) -> b) -> List(b):
+  case xs:
+    [] -> []
+    [x, ..rest] -> [f(x), ..map(rest, f)]
+
+/// Keep only elements for which the predicate returns True.
+///
+/// ```donna
+/// list.filter([1, 2, 3], fn(n: Int) -> n > 1)
+/// ```
+pub fn filter(xs: List(a), f: fn(a) -> Bool) -> List(a):
+  case xs:
+    [] -> []
+    [x, ..rest] ->
+      case f(x):
+        True -> [x, ..filter(rest, f)]
+        False -> filter(rest, f)
+
+/// Fold left: combine elements with an accumulator.
+///
+/// ```donna
+/// list.fold([1, 2, 3], 0, fn(acc: Int, n: Int) -> acc + n)
+/// ```
+pub fn fold(xs: List(a), init: b, f: fn(b, a) -> b) -> b:
+  case xs:
+    [] -> init
+    [x, ..rest] -> fold(rest, f(init, x), f)
+
+/// Fold right: combine elements right-to-left.
+///
+/// ```donna
+/// list.fold_right([1, 2, 3], 0, fn(n: Int, acc: Int) -> n + acc)
+/// ```
+pub fn fold_right(xs: List(a), init: b, f: fn(a, b) -> b) -> b:
+  case xs:
+    [] -> init
+    [x, ..rest] -> f(x, fold_right(rest, init, f))
+
+/// Check if any element satisfies the predicate.
+///
+/// ```donna
+/// list.any([1, 2, 3], fn(n: Int) -> n > 2)
+/// ```
+pub fn any(xs: List(a), f: fn(a) -> Bool) -> Bool:
+  case xs:
+    [] -> False
+    [x, ..rest] ->
+      case f(x):
+        True -> True
+        False -> any(rest, f)
+
+/// Check if all elements satisfy the predicate.
+///
+/// ```donna
+/// list.all([2, 4], fn(n: Int) -> n % 2 == 0)
+/// ```
+pub fn all(xs: List(a), f: fn(a) -> Bool) -> Bool:
+  case xs:
+    [] -> True
+    [x, ..rest] ->
+      case f(x):
+        True -> all(rest, f)
+        False -> False
+
+/// Find the first element satisfying the predicate, or default if none.
+///
+/// ```donna
+/// list.find([1, 2, 3], fn(n: Int) -> n > 1, 0)
+/// ```
+pub fn find(xs: List(a), f: fn(a) -> Bool, default: a) -> a:
+  case xs:
+    [] -> default
+    [x, ..rest] ->
+      case f(x):
+        True -> x
+        False -> find(rest, f, default)
+
+/// Flat-map: apply f to each element and concatenate the results.
+///
+/// ```donna
+/// list.flat_map([1, 2], fn(n: Int) -> [n, n])
+/// ```
+pub fn flat_map(xs: List(a), f: fn(a) -> List(b)) -> List(b):
+  case xs:
+    [] -> []
+    [x, ..rest] ->
+      case f(x):
+        [] -> flat_map(rest, f)
+        [h, ..t] -> [h, ..flat_map_join(t, flat_map(rest, f))]
+
+fn flat_map_join(chunk: List(b), rest: List(b)) -> List(b):
+  case chunk:
+    [] -> rest
+    [x, ..more] -> [x, ..flat_map_join(more, rest)]
+
+/// Count elements satisfying the predicate.
+///
+/// ```donna
+/// list.count([1, 2, 3], fn(n: Int) -> n > 1)
+/// ```
+pub fn count(xs: List(a), f: fn(a) -> Bool) -> Int:
+  case xs:
+    [] -> 0
+    [x, ..rest] ->
+      case f(x):
+        True -> 1 + count(rest, f)
+        False -> count(rest, f)
+
+/// Zip two lists, applying f to corresponding pairs.
+///
+/// ```donna
+/// list.zip_with([1, 2], [3, 4], fn(a: Int, b: Int) -> a + b)
+/// ```
+pub fn zip_with(xs: List(a), ys: List(b), f: fn(a, b) -> c) -> List(c):
+  case xs:
+    [] -> []
+    [x, ..xrest] ->
+      case ys:
+        [] -> []
+        [y, ..yrest] -> [f(x, y), ..zip_with(xrest, yrest, f)]
+
+/// Each: apply a function for its side effects.
+///
+/// ```donna
+/// list.each(["a", "b"], fn(s: String) -> echo s)
+/// ```
+pub fn each(xs: List(a), f: fn(a) -> Nil) -> Nil:
+  case xs:
+    [] -> Nil
+    [x, ..rest] ->
+      let _ = f(x)
+      each(rest, f)
