@@ -14,7 +14,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#ifdef _WIN32
+#include <direct.h>
+#else
 #include <unistd.h>
+#endif
 #include <time.h>
 
 long donna_ffi_time_now_ms(void);
@@ -43,6 +47,18 @@ int donna_ffi_file_delete(const char *path);
 int donna_ffi_file_copy(const char *src, const char *dst);
 char *donna_ffi_file_list_dir(const char *path);
 __attribute__((weak)) long donna_program_main(void);
+
+#ifdef _WIN32
+char *strndup(const char *s, size_t n) {
+    size_t len = 0;
+    while (len < n && s[len] != '\0') len++;
+    char *out = malloc(len + 1);
+    if (!out) return NULL;
+    memcpy(out, s, len);
+    out[len] = '\0';
+    return out;
+}
+#endif
 
 /* Time */
 
@@ -205,7 +221,11 @@ int donna_ffi_file_is_dir(const char *path) {
 
 /* Create directory with mode 0755. Returns 0 on success, -1 on error. */
 int donna_ffi_file_mkdir(const char *path) {
+#ifdef _WIN32
+    return mkdir(path);
+#else
     return mkdir(path, 0755);
+#endif
 }
 
 /* Delete a file or empty directory. Returns 0 on success, -1 on error. */
