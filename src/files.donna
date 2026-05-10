@@ -115,7 +115,12 @@ pub fn list_dir(path: String) -> List(String):
     True -> []
     False -> split_lines(raw, 0, 0, [])
 
-fn split_lines(s: String, start: Int, i: Int, acc: List(String)) -> List(String):
+fn split_lines(
+  s: String,
+  start: Int,
+  i: Int,
+  acc: List(String)
+) -> List(String):
   let len = string_length(s)
   case i == len:
     True ->
@@ -124,7 +129,8 @@ fn split_lines(s: String, start: Int, i: Int, acc: List(String)) -> List(String)
         False -> reverse([substring(s, start, i - start), ..acc])
     False ->
       case char_at(s, i) == 10:
-        True -> split_lines(s, i + 1, i + 1, [substring(s, start, i - start), ..acc])
+        True ->
+          split_lines(s, i + 1, i + 1, [substring(s, start, i - start), ..acc])
         False -> split_lines(s, start, i + 1, acc)
 
 fn reverse(xs: List(String)) -> List(String):
@@ -134,8 +140,6 @@ fn reverse_acc(xs: List(String), acc: List(String)) -> List(String):
   case xs:
     [] -> acc
     [x, ..rest] -> reverse_acc(rest, [x, ..acc])
-
-// ── Path utilities ────────────────────────────────────────────────────────────
 
 /// Join two path segments with a "/" separator.
 ///

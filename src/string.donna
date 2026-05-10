@@ -167,7 +167,15 @@ pub fn split(s: String, sep: String) -> List(String):
     True -> [s]
     False -> split_helper(s, sep, slen, seplen, 0, 0, [])
 
-fn split_helper(s: String, sep: String, slen: Int, seplen: Int, start: Int, i: Int, acc: List(String)) -> List(String):
+fn split_helper(
+  s: String,
+  sep: String,
+  slen: Int,
+  seplen: Int,
+  start: Int,
+  i: Int,
+  acc: List(String)
+) -> List(String):
   case i + seplen > slen:
     True ->
       let part = substring(s, start, slen - start)
@@ -176,7 +184,15 @@ fn split_helper(s: String, sep: String, slen: Int, seplen: Int, start: Int, i: I
       case string_equal(substring(s, i, seplen), sep):
         True ->
           let part = substring(s, start, i - start)
-          split_helper(s, sep, slen, seplen, i + seplen, i + seplen, [part, ..acc])
+          split_helper(
+            s,
+            sep,
+            slen,
+            seplen,
+            i + seplen,
+            i + seplen,
+            [part, ..acc]
+          )
         False ->
           split_helper(s, sep, slen, seplen, start, i + 1, acc)
 
@@ -251,7 +267,16 @@ pub fn replace(s: String, from: String, to: String) -> String:
     True -> s
     False -> replace_helper(s, from, to, slen, flen, 0, 0, "")
 
-fn replace_helper(s: String, from: String, to: String, slen: Int, flen: Int, start: Int, i: Int, acc: String) -> String:
+fn replace_helper(
+  s: String,
+  from: String,
+  to: String,
+  slen: Int,
+  flen: Int,
+  start: Int,
+  i: Int,
+  acc: String
+) -> String:
   case i + flen > slen:
     True ->
       acc <> substring(s, start, slen - start)
@@ -259,7 +284,16 @@ fn replace_helper(s: String, from: String, to: String, slen: Int, flen: Int, sta
       case string_equal(substring(s, i, flen), from):
         True ->
           let piece = substring(s, start, i - start)
-          replace_helper(s, from, to, slen, flen, i + flen, i + flen, acc <> piece <> to)
+          replace_helper(
+            s,
+            from,
+            to,
+            slen,
+            flen,
+            i + flen,
+            i + flen,
+            acc <> piece <> to
+          )
         False ->
           replace_helper(s, from, to, slen, flen, start, i + 1, acc)
 

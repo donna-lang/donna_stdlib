@@ -1,8 +1,8 @@
 //// Generic association list dictionary.
 ////
 //// Keys are compared using a caller-supplied equality function:
-////   for Int keys:    fn(a: Int, b: Int) -> a == b
-////   for String keys: fn(a: String, b: String) -> string.equal(a, b)
+//// for Int keys:    fn(a: Int, b: Int) -> a == b
+//// for String keys: fn(a: String, b: String) -> string.equal(a, b)
 ////
 //// All operations are O(n), suitable for small-to-medium maps.
 
@@ -24,7 +24,12 @@ pub fn new() -> Dict(k, v):
 /// ```donna
 /// dict.insert(dict.new(), "name", "Donna", fn(a: String, b: String) -> string.equal(a, b))
 /// ```
-pub fn insert(d: Dict(k, v), key: k, val: v, eq: fn(k, k) -> Bool) -> Dict(k, v):
+pub fn insert(
+  d: Dict(k, v),
+  key: k,
+  val: v,
+  eq: fn(k, k) -> Bool
+) -> Dict(k, v):
   case d:
     Empty -> Entry(key, val, Empty)
     Entry(k2, v2, rest) ->
@@ -140,7 +145,11 @@ pub fn from_list(pairs: List(#(k, v)), eq: fn(k, k) -> Bool) -> Dict(k, v):
 /// ```donna
 /// dict.merge(base, overrides, fn(a: String, b: String) -> string.equal(a, b))
 /// ```
-pub fn merge(base: Dict(k, v), other: Dict(k, v), eq: fn(k, k) -> Bool) -> Dict(k, v):
+pub fn merge(
+  base: Dict(k, v),
+  other: Dict(k, v),
+  eq: fn(k, k) -> Bool
+) -> Dict(k, v):
   case other:
     Empty -> base
     Entry(k2, v2, rest) -> merge(insert(base, k2, v2, eq), rest, eq)
@@ -196,7 +205,12 @@ pub fn find_keys(d: Dict(k, v), f: fn(k, v) -> Bool) -> List(k):
 /// ```donna
 /// dict.update(scores, "total", fn(n: Int) -> n + 1, fn(a: String, b: String) -> string.equal(a, b))
 /// ```
-pub fn update(d: Dict(k, v), key: k, f: fn(v) -> v, eq: fn(k, k) -> Bool) -> Dict(k, v):
+pub fn update(
+  d: Dict(k, v),
+  key: k,
+  f: fn(v) -> v,
+  eq: fn(k, k) -> Bool
+) -> Dict(k, v):
   case d:
     Empty -> Empty
     Entry(k2, v2, rest) ->
