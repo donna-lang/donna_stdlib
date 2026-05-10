@@ -5,6 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>donna_stdlib - Docs</title>
 <style>@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+.copy-code { margin-left: auto; border: 1px solid var(--border); border-radius: 6px; background: rgba(255,255,255,0.04); color: var(--text-dim); font-family: var(--mono); font-size: 0.68rem; padding: 4px 8px; cursor: pointer; }
+.copy-code:hover { color: var(--text); border-color: rgba(255,255,255,0.18); }
+.hl-kw { color: var(--orange); font-weight: 600; }
+.hl-type { color: oklch(0.72 0.1 260); }
+.hl-constructor { color: oklch(0.76 0.1 250); font-weight: 600; }
+.hl-fn { color: oklch(0.75 0.12 205); }
+.hl-var { color: oklch(0.78 0.08 90); }
+.hl-module { color: oklch(0.74 0.09 185); }
+.hl-op { color: oklch(0.8 0.12 70); font-weight: 600; }
+.hl-str { color: oklch(0.74 0.1 145); }
+.hl-num { color: oklch(0.72 0.1 300); }
+.hl-comment { color: rgba(245,240,236,0.32); font-style: italic; }
+body.theme-light .hl-comment { color: rgba(36,32,29,0.42); }
+body.page-package-docs .module-doc pre { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin: 12px 0 18px; max-width: 100%; }
+body.page-package-docs .module-doc pre code { display: block; padding: 14px 16px; background: none; color: var(--text-dim); overflow-x: auto; font-size: 0.82rem; white-space: pre; }
 
 :root {
   --orange: oklch(0.62 0.19 38);
@@ -216,10 +231,11 @@ body.page-package-docs .ctor-doc p { margin: 0; }
 </head>
 <body class="page-package">
 <div class="theme-corner"><button type="button" class="theme-toggle" data-theme-toggle aria-label="Switch to light theme"><span class="theme-toggle-icon" aria-hidden="true"></span></button></div><button class="sidebar-burger" id="sidebar-burger" aria-label="Menu"><span></span><span></span><span></span></button><div class="pkg-layout"><aside class="pkg-sidebar" id="page-sidebar"><div class="sidebar-pkg-name">donna_stdlib</div><div class="sidebar-pkg-ver">v0.1.0</div><div class="sidebar-section-label">On this page</div><ul class="sidebar-nav"><li><a href="#overview">Overview</a></li><li><a href="#installation">Installation</a></li><li><a href="#usage">Usage</a></li><li><a href="#api">API</a></li><li><a href="#licence">Licence</a></li></ul><div class="sidebar-section-label">Links</div><ul class="sidebar-nav"><li><a href="docs.html">Documentation &rarr;</a></li><li><a href="https://github.com/donna-lang/donna_stdlib">GitHub &rarr;</a></li><li><a href="https://donna-lang.github.io/donna_stdlib/">Docs &rarr;</a></li></ul></aside><div class="pkg-spacer" aria-hidden="true"></div><main class="pkg-main"><div class="breadcrumb"><span>donna_stdlib</span></div><div class="pkg-header"><div class="pkg-header-left"><div class="pkg-title"><span>donna_stdlib</span></div><p class="pkg-tagline">The Donna standard library</p><div class="pkg-badges"><span class="badge-item">MIT</span></div></div><div class="pkg-actions"><a href="docs.html" class="btn btn-primary">View Docs</a><a href="https://github.com/donna-lang/donna_stdlib" class="btn btn-ghost">GitHub &rarr;</a></div></div><div class="readme"><h1>donna_stdlib</h1>
-<img src="https://img.shields.io/badge/Donna-unittest-FF6347?style=for-the-badge" alt="Donna unittest"/>
+<img src="https://img.shields.io/badge/Donna-stdlib-FF6347?style=for-the-badge" alt="Donna stdlib"/>
 <a href="https://donna-lang.github.io/donna_stdlib/">
   <img src="https://img.shields.io/badge/Docs-Read-2F81F7?style=for-the-badge" alt="Docs - Read"/>
 </a>
+<img src="https://img.shields.io/github/actions/workflow/status/donna-lang/donna_stdlib/test.yml?branch=main&label=Test&style=for-the-badge" alt="Test status"/>
 <p>The Donna standard library.</p>
 <h2>Overview</h2>
 <p><code>donna_stdlib</code> provides the core modules used by Donna projects:</p>
@@ -346,6 +362,94 @@ pub fn main() -&gt; Nil:
   initCodeBlocks();
   initSidebarSpy('.page-package .readme h2, .page-package .readme h3', '.page-package .sidebar-nav a', '');
   initSidebarSpy('.page-package-docs .fn-card[id]', '.page-package-docs .sidebar-nav a', '');
+})();</script>
+<script>(() => {
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function addCopyBar(pre) {
+    if (pre.parentElement && pre.parentElement.classList.contains('code-block')) return;
+    var wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    var bar = document.createElement('div');
+    bar.className = 'code-bar';
+    bar.innerHTML = '<div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div><button type="button" class="copy-code" aria-label="Copy code">Copy</button>';
+    pre.parentNode.insertBefore(wrapper, pre);
+    wrapper.appendChild(bar);
+    wrapper.appendChild(pre);
+  }
+  function highlightDonna(code) {
+    var html = esc(code);
+    var held = {};
+    var heldCount = 0;
+    function holdKey(n) {
+      var out = '';
+      do {
+        out = String.fromCharCode(65 + (n % 26)) + out;
+        n = Math.floor(n / 26) - 1;
+      } while (n >= 0);
+      return '@@DONNAHL' + out + '@@';
+    }
+    function stash(cls, value) {
+      var key = holdKey(heldCount++);
+      held[key] = '<span class="' + cls + '">' + value + '</span>';
+      return key;
+    }
+    html = html.replace(/(&quot;[^\n]*?&quot;|"[^\n]*?")/g, function(m) { return stash('hl-str', m); });
+    html = html.replace(/(\/\/.*)$/gm, function(m) { return stash('hl-comment', m); });
+    html = html.replace(/(\bimport\s+)([A-Za-z0-9_\/]+)/g, function(_, kw, mod) { return stash('hl-kw', 'import') + ' ' + stash('hl-module', mod); });
+    html = html.replace(/\b([a-z_][A-Za-z0-9_]*)(?=\.)/g, function(m) { return stash('hl-module', m); });
+    html = html.replace(/(\|&gt;\s*)([a-z_][A-Za-z0-9_]*)/g, function(_, op, fn) { return stash('hl-op', op.trim()) + ' ' + stash('hl-fn', fn); });
+    html = html.replace(/(\|&gt;|-&gt;)/g, function(m) { return stash('hl-op', m); });
+    html = html.replace(/\blet\s+([a-z_][A-Za-z0-9_]*)/g, function(_, name) { return stash('hl-kw', 'let') + ' ' + stash('hl-var', name); });
+    html = html.replace(/\b(echo|panic)\s+([a-z_][A-Za-z0-9_]*)\b/g, function(_, kw, name) { return stash('hl-kw', kw) + ' ' + stash('hl-var', name); });
+    html = html.replace(/\bcase\s+([a-z_][A-Za-z0-9_]*)\b(?!\s*\()/g, function(_, name) { return stash('hl-kw', 'case') + ' ' + stash('hl-var', name); });
+    html = html.replace(/\b(pub|fn|type|const|case|if|opaque|external|echo|panic|todo|as)\b/g, function(m) { return stash('hl-kw', m); });
+    html = html.replace(/\b([a-z_][A-Za-z0-9_]*)(?=\s*\()/g, function(m) { return stash('hl-fn', m); });
+    html = html.replace(/\b([A-Z][A-Za-z0-9_]*)(?=\s*\()/g, function(m) { return stash('hl-constructor', m); });
+    html = html.replace(/\b(Int|String|Bool|Float|List|Nil)\b/g, function(m) { return stash('hl-type', m); });
+    html = html.replace(/\b(True|False)\b/g, function(m) { return stash('hl-constructor', m); });
+    html = html.replace(/\b([0-9]+)\b/g, function(m) { return stash('hl-num', m); });
+    html = html.replace(/@@DONNAHL[A-Z]+@@/g, function(m) { return held[m]; });
+    return html;
+  }
+  function shouldHighlight(code) {
+    return code.classList.contains('language-donna') || /\b(pub fn|fn |import |pub type|pub const|case |let )\b/.test(code.textContent);
+  }
+  function applyDonnaHighlight(code) {
+    if (shouldHighlight(code) && !code.dataset.highlighted) {
+      addCopyBar(code.parentElement);
+      code.innerHTML = highlightDonna(code.textContent);
+      code.dataset.highlighted = 'true';
+    }
+  }
+  document.querySelectorAll('.code-block').forEach(function(block) {
+    var bar = block.querySelector('.code-bar');
+    var code = block.querySelector('pre code');
+    if (!bar || !code) return;
+    if (!bar.querySelector('.copy-code')) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-code';
+      btn.setAttribute('aria-label', 'Copy code');
+      btn.textContent = 'Copy';
+      bar.appendChild(btn);
+    }
+    applyDonnaHighlight(code);
+  });
+  document.querySelectorAll('pre code').forEach(function(code) {
+    applyDonnaHighlight(code);
+  });
+  document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('copy-code')) return;
+    var block = e.target.closest('.code-block');
+    var code = block && block.querySelector('pre code');
+    if (!code) return;
+    navigator.clipboard.writeText(code.textContent).then(function() {
+      e.target.textContent = 'Copied';
+      setTimeout(function() { e.target.textContent = 'Copy'; }, 1200);
+    });
+  });
 })();</script>
 </body>
 </html>
