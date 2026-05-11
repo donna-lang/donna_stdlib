@@ -56,8 +56,8 @@ jobs:
           donna format
           git diff --exit-code
 
-      - name: Check
-        run: donna check
+      - name: Build
+        run: donna build
 
       - name: Test
         run: donna test
