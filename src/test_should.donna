@@ -1,0 +1,28 @@
+//// Internal assertion helpers for donna_stdlib self tests.
+////
+//// This module exists to avoid a dev-dependency cycle:
+//// `unittest` depends on `donna_stdlib`, so `donna_stdlib` cannot use
+//// `unittest` for its own CI without compiling two copies of donna/*.
+
+fn ok(condition: Bool, message: String) -> String:
+  case condition:
+    True -> ""
+    False -> message
+
+pub fn fail(message: String) -> String:
+  "fail: " <> message
+
+pub fn equal_int(actual: Int, expected: Int) -> String:
+  ok(actual == expected, "expected equal Int values")
+
+pub fn equal_string(actual: String, expected: String) -> String:
+  ok(actual == expected, "expected equal String values")
+
+pub fn be_true(actual: Bool) -> String:
+  ok(actual, "expected True")
+
+pub fn be_false(actual: Bool) -> String:
+  ok(!actual, "expected False")
+
+pub fn is_true(actual: Bool) -> String:
+  be_true(actual)

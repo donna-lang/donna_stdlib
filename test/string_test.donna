@@ -1,240 +1,240 @@
 import string
-import unittest/should
+import test_should
 
 // length
 
 pub fn length_empty_test() -> String:
-  string.length("") |> should.equal_int(0)
+  string.length("") |> test_should.equal_int(0)
 
 pub fn length_basic_test() -> String:
-  string.length("hello") |> should.equal_int(5)
+  string.length("hello") |> test_should.equal_int(5)
 
 pub fn length_spaces_test() -> String:
-  string.length("a b") |> should.equal_int(3)
+  string.length("a b") |> test_should.equal_int(3)
 
 // equal
 
 pub fn equal_same_test() -> String:
-  string.equal("abc", "abc") |> should.be_true()
+  string.equal("abc", "abc") |> test_should.be_true()
 
 pub fn equal_diff_test() -> String:
-  string.equal("abc", "xyz") |> should.be_false()
+  string.equal("abc", "xyz") |> test_should.be_false()
 
 pub fn equal_empty_test() -> String:
-  string.equal("", "") |> should.be_true()
+  string.equal("", "") |> test_should.be_true()
 
 // is_empty
 
 pub fn is_empty_true_test() -> String:
-  string.is_empty("") |> should.be_true()
+  string.is_empty("") |> test_should.be_true()
 
 pub fn is_empty_false_test() -> String:
-  string.is_empty("x") |> should.be_false()
+  string.is_empty("x") |> test_should.be_false()
 
 // concat
 
 pub fn concat_test() -> String:
-  string.concat("foo", "bar") |> should.equal_string("foobar")
+  string.concat("foo", "bar") |> test_should.equal_string("foobar")
 
 pub fn concat_empty_test() -> String:
-  string.concat("", "hello") |> should.equal_string("hello")
+  string.concat("", "hello") |> test_should.equal_string("hello")
 
 // starts_with / ends_with
 
 pub fn starts_with_true_test() -> String:
-  string.starts_with("hello world", "hello") |> should.be_true()
+  string.starts_with("hello world", "hello") |> test_should.be_true()
 
 pub fn starts_with_false_test() -> String:
-  string.starts_with("hello world", "world") |> should.be_false()
+  string.starts_with("hello world", "world") |> test_should.be_false()
 
 pub fn starts_with_empty_test() -> String:
-  string.starts_with("abc", "") |> should.be_true()
+  string.starts_with("abc", "") |> test_should.be_true()
 
 pub fn ends_with_true_test() -> String:
-  string.ends_with("hello world", "world") |> should.be_true()
+  string.ends_with("hello world", "world") |> test_should.be_true()
 
 pub fn ends_with_false_test() -> String:
-  string.ends_with("hello world", "hello") |> should.be_false()
+  string.ends_with("hello world", "hello") |> test_should.be_false()
 
 // slice
 
 pub fn slice_basic_test() -> String:
-  string.slice("hello", 1, 3) |> should.equal_string("ell")
+  string.slice("hello", 1, 3) |> test_should.equal_string("ell")
 
 pub fn slice_from_start_test() -> String:
-  string.slice("hello", 0, 5) |> should.equal_string("hello")
+  string.slice("hello", 0, 5) |> test_should.equal_string("hello")
 
 pub fn slice_single_test() -> String:
-  string.slice("hello", 4, 1) |> should.equal_string("o")
+  string.slice("hello", 4, 1) |> test_should.equal_string("o")
 
 // reverse
 
 pub fn reverse_test() -> String:
-  string.reverse("hello") |> should.equal_string("olleh")
+  string.reverse("hello") |> test_should.equal_string("olleh")
 
 pub fn reverse_empty_test() -> String:
-  string.reverse("") |> should.equal_string("")
+  string.reverse("") |> test_should.equal_string("")
 
 pub fn reverse_single_test() -> String:
-  string.reverse("a") |> should.equal_string("a")
+  string.reverse("a") |> test_should.equal_string("a")
 
 // contains / index_of
 
 pub fn contains_true_test() -> String:
-  string.contains("hello world", "world") |> should.be_true()
+  string.contains("hello world", "world") |> test_should.be_true()
 
 pub fn contains_false_test() -> String:
-  string.contains("hello world", "xyz") |> should.be_false()
+  string.contains("hello world", "xyz") |> test_should.be_false()
 
 pub fn index_of_found_test() -> String:
-  string.index_of("hello world", "world") |> should.equal_int(6)
+  string.index_of("hello world", "world") |> test_should.equal_int(6)
 
 pub fn index_of_not_found_test() -> String:
-  string.index_of("hello world", "xyz") |> should.equal_int(-1)
+  string.index_of("hello world", "xyz") |> test_should.equal_int(-1)
 
 pub fn index_of_start_test() -> String:
-  string.index_of("abcabc", "abc") |> should.equal_int(0)
+  string.index_of("abcabc", "abc") |> test_should.equal_int(0)
 
 pub fn index_of_from_test() -> String:
-  string.index_of_from("abcabc", "abc", 1) |> should.equal_int(3)
+  string.index_of_from("abcabc", "abc", 1) |> test_should.equal_int(3)
 
 pub fn index_of_empty_substring_test() -> String:
-  string.index_of_from("abc", "", 2) |> should.equal_int(2)
+  string.index_of_from("abc", "", 2) |> test_should.equal_int(2)
 
 pub fn index_of_from_after_end_test() -> String:
-  string.index_of_from("abc", "a", 4) |> should.equal_int(-1)
+  string.index_of_from("abc", "a", 4) |> test_should.equal_int(-1)
 
 // split
 
 pub fn split_basic_test() -> String:
   case string.split("a,b,c", ","):
     [a, b, c] ->
-      should.equal_string(a, "a")
-      <> should.equal_string(b, "b")
-      <> should.equal_string(c, "c")
-    _ -> should.fail("expected 3 parts")
+      test_should.equal_string(a, "a")
+      <> test_should.equal_string(b, "b")
+      <> test_should.equal_string(c, "c")
+    _ -> test_should.fail("expected 3 parts")
 
 pub fn split_no_sep_test() -> String:
   case string.split("hello", ","):
-    [s] -> should.equal_string(s, "hello")
-    _ -> should.fail("expected 1 part")
+    [s] -> test_should.equal_string(s, "hello")
+    _ -> test_should.fail("expected 1 part")
 
 pub fn split_empty_parts_test() -> String:
   case string.split("a,,b", ","):
     [a, mid, b] ->
-      should.equal_string(a, "a")
-      <> should.equal_string(mid, "")
-      <> should.equal_string(b, "b")
-    _ -> should.fail("expected 3 parts")
+      test_should.equal_string(a, "a")
+      <> test_should.equal_string(mid, "")
+      <> test_should.equal_string(b, "b")
+    _ -> test_should.fail("expected 3 parts")
 
 // trim
 
 pub fn trim_leading_test() -> String:
-  string.trim("  hello") |> should.equal_string("hello")
+  string.trim("  hello") |> test_should.equal_string("hello")
 
 pub fn trim_trailing_test() -> String:
-  string.trim("hello  ") |> should.equal_string("hello")
+  string.trim("hello  ") |> test_should.equal_string("hello")
 
 pub fn trim_both_test() -> String:
-  string.trim("  hello  ") |> should.equal_string("hello")
+  string.trim("  hello  ") |> test_should.equal_string("hello")
 
 pub fn trim_empty_test() -> String:
-  string.trim("") |> should.equal_string("")
+  string.trim("") |> test_should.equal_string("")
 
 pub fn trim_only_spaces_test() -> String:
-  string.trim("   ") |> should.equal_string("")
+  string.trim("   ") |> test_should.equal_string("")
 
 // replace
 
 pub fn replace_basic_test() -> String:
-  string.replace("hello world", "world", "Donna") |> should.equal_string("hello Donna")
+  string.replace("hello world", "world", "Donna") |> test_should.equal_string("hello Donna")
 
 pub fn replace_all_test() -> String:
-  string.replace("aaa", "a", "b") |> should.equal_string("bbb")
+  string.replace("aaa", "a", "b") |> test_should.equal_string("bbb")
 
 pub fn replace_not_found_test() -> String:
-  string.replace("hello", "xyz", "!") |> should.equal_string("hello")
+  string.replace("hello", "xyz", "!") |> test_should.equal_string("hello")
 
 pub fn replace_empty_from_test() -> String:
-  string.replace("hello", "", "!") |> should.equal_string("hello")
+  string.replace("hello", "", "!") |> test_should.equal_string("hello")
 
 pub fn replace_non_overlapping_test() -> String:
-  string.replace("aaaa", "aa", "b") |> should.equal_string("bb")
+  string.replace("aaaa", "aa", "b") |> test_should.equal_string("bb")
 
 pub fn replace_keeps_tail_test() -> String:
-  string.replace("aaa", "aa", "b") |> should.equal_string("ba")
+  string.replace("aaa", "aa", "b") |> test_should.equal_string("ba")
 
 // to_int
 
 pub fn to_int_basic_test() -> String:
-  string.to_int("42") |> should.equal_int(42)
+  string.to_int("42") |> test_should.equal_int(42)
 
 pub fn to_int_negative_test() -> String:
-  string.to_int("-7") |> should.equal_int(-7)
+  string.to_int("-7") |> test_should.equal_int(-7)
 
 pub fn to_int_zero_test() -> String:
-  string.to_int("0") |> should.equal_int(0)
+  string.to_int("0") |> test_should.equal_int(0)
 
 pub fn to_int_leading_space_test() -> String:
-  string.to_int("  123") |> should.equal_int(123)
+  string.to_int("  123") |> test_should.equal_int(123)
 
 // from_int
 
 pub fn from_int_test() -> String:
-  string.from_int(42) |> should.equal_string("42")
+  string.from_int(42) |> test_should.equal_string("42")
 
 pub fn from_int_negative_test() -> String:
-  string.from_int(-5) |> should.equal_string("-5")
+  string.from_int(-5) |> test_should.equal_string("-5")
 
 pub fn from_int_zero_test() -> String:
-  string.from_int(0) |> should.equal_string("0")
+  string.from_int(0) |> test_should.equal_string("0")
 
 // repeat
 
 pub fn repeat_basic_test() -> String:
-  string.repeat("ab", 3) |> should.equal_string("ababab")
+  string.repeat("ab", 3) |> test_should.equal_string("ababab")
 
 pub fn repeat_zero_test() -> String:
-  string.repeat("ab", 0) |> should.equal_string("")
+  string.repeat("ab", 0) |> test_should.equal_string("")
 
 pub fn repeat_once_test() -> String:
-  string.repeat("x", 1) |> should.equal_string("x")
+  string.repeat("x", 1) |> test_should.equal_string("x")
 
 // join
 
 pub fn join_basic_test() -> String:
-  string.join(["a", "b", "c"], ", ") |> should.equal_string("a, b, c")
+  string.join(["a", "b", "c"], ", ") |> test_should.equal_string("a, b, c")
 
 pub fn join_two_test() -> String:
-  string.join(["x", "y"], " | ") |> should.equal_string("x | y")
+  string.join(["x", "y"], " | ") |> test_should.equal_string("x | y")
 
 pub fn join_one_test() -> String:
-  string.join(["only"], ",") |> should.equal_string("only")
+  string.join(["only"], ",") |> test_should.equal_string("only")
 
 pub fn join_empty_test() -> String:
-  string.join([], ",") |> should.equal_string("")
+  string.join([], ",") |> test_should.equal_string("")
 
 pub fn join_no_sep_test() -> String:
-  string.join(["a", "b", "c"], "") |> should.equal_string("abc")
+  string.join(["a", "b", "c"], "") |> test_should.equal_string("abc")
 
 // pad_left
 
 pub fn pad_left_basic_test() -> String:
-  string.pad_left("42", 5, "0") |> should.equal_string("00042")
+  string.pad_left("42", 5, "0") |> test_should.equal_string("00042")
 
 pub fn pad_left_exact_test() -> String:
-  string.pad_left("hello", 5, " ") |> should.equal_string("hello")
+  string.pad_left("hello", 5, " ") |> test_should.equal_string("hello")
 
 pub fn pad_left_longer_test() -> String:
-  string.pad_left("toolong", 3, " ") |> should.equal_string("toolong")
+  string.pad_left("toolong", 3, " ") |> test_should.equal_string("toolong")
 
 // is_digits
 
 pub fn is_digits_true_test() -> String:
-  string.is_digits("12345") |> should.be_true()
+  string.is_digits("12345") |> test_should.be_true()
 
 pub fn is_digits_false_test() -> String:
-  string.is_digits("12x5") |> should.be_false()
+  string.is_digits("12x5") |> test_should.be_false()
 
 pub fn is_digits_empty_test() -> String:
-  string.is_digits("") |> should.be_false()
+  string.is_digits("") |> test_should.be_false()

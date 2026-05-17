@@ -1,5 +1,5 @@
 import dict
-import unittest/should
+import test_should
 
 // Equality helpers used as comparators.
 fn eq_str(a: String, b: String) -> Bool:
@@ -11,66 +11,66 @@ fn eq_int(a: Int, b: Int) -> Bool:
 // new / is_empty / size
 
 pub fn new_is_empty_test() -> String:
-  dict.is_empty(dict.new()) |> should.be_true()
+  dict.is_empty(dict.new()) |> test_should.be_true()
 
 pub fn new_size_test() -> String:
-  dict.size(dict.new()) |> should.equal_int(0)
+  dict.size(dict.new()) |> test_should.equal_int(0)
 
 // insert / get
 
 pub fn insert_get_test() -> String:
   let d = dict.insert(dict.new(), "key", 42, eq_str)
-  dict.get(d, "key", 0, eq_str) |> should.equal_int(42)
+  dict.get(d, "key", 0, eq_str) |> test_should.equal_int(42)
 
 pub fn get_missing_returns_default_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
-  dict.get(d, "b", -1, eq_str) |> should.equal_int(-1)
+  dict.get(d, "b", -1, eq_str) |> test_should.equal_int(-1)
 
 pub fn insert_two_keys_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let d2 = dict.insert(d, "b", 2, eq_str)
-  dict.size(d2) |> should.equal_int(2)
+  dict.size(d2) |> test_should.equal_int(2)
 
 pub fn insert_overwrite_test() -> String:
   let d = dict.insert(dict.new(), "k", 1, eq_str)
   let d2 = dict.insert(d, "k", 99, eq_str)
-  dict.get(d2, "k", 0, eq_str) |> should.equal_int(99)
+  dict.get(d2, "k", 0, eq_str) |> test_should.equal_int(99)
 
 pub fn insert_overwrite_size_test() -> String:
   let d = dict.insert(dict.new(), "k", 1, eq_str)
   let d2 = dict.insert(d, "k", 99, eq_str)
-  dict.size(d2) |> should.equal_int(1)
+  dict.size(d2) |> test_should.equal_int(1)
 
 // has_key
 
 pub fn has_key_present_test() -> String:
   let d = dict.insert(dict.new(), "hello", 0, eq_str)
-  dict.has_key(d, "hello", eq_str) |> should.be_true()
+  dict.has_key(d, "hello", eq_str) |> test_should.be_true()
 
 pub fn has_key_absent_test() -> String:
   let d = dict.insert(dict.new(), "hello", 0, eq_str)
-  dict.has_key(d, "world", eq_str) |> should.be_false()
+  dict.has_key(d, "world", eq_str) |> test_should.be_false()
 
 pub fn has_key_empty_test() -> String:
-  dict.has_key(dict.new(), "x", eq_str) |> should.be_false()
+  dict.has_key(dict.new(), "x", eq_str) |> test_should.be_false()
 
 // delete
 
 pub fn delete_removes_key_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let d2 = dict.delete(d, "a", eq_str)
-  dict.has_key(d2, "a", eq_str) |> should.be_false()
+  dict.has_key(d2, "a", eq_str) |> test_should.be_false()
 
 pub fn delete_missing_is_noop_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let d2 = dict.delete(d, "nope", eq_str)
-  dict.size(d2) |> should.equal_int(1)
+  dict.size(d2) |> test_should.equal_int(1)
 
 pub fn delete_reduces_size_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let d2 = dict.insert(d, "b", 2, eq_str)
   let d3 = dict.delete(d2, "a", eq_str)
-  dict.size(d3) |> should.equal_int(1)
+  dict.size(d3) |> test_should.equal_int(1)
 
 // fold
 
@@ -78,28 +78,28 @@ pub fn fold_sum_test() -> String:
   let d = dict.insert(dict.new(), "a", 10, eq_str)
   let d2 = dict.insert(d, "b", 20, eq_str)
   let d3 = dict.insert(d2, "c", 30, eq_str)
-  dict.fold(d3, 0, fn(acc, _k, v) -> acc + v) |> should.equal_int(60)
+  dict.fold(d3, 0, fn(acc, _k, v) -> acc + v) |> test_should.equal_int(60)
 
 pub fn fold_empty_test() -> String:
-  dict.fold(dict.new(), 99, fn(acc, _k, _v) -> acc) |> should.equal_int(99)
+  dict.fold(dict.new(), 99, fn(acc, _k, _v) -> acc) |> test_should.equal_int(99)
 
 pub fn fold_count_test() -> String:
   let d = dict.insert(dict.new(), "x", 0, eq_str)
   let d2 = dict.insert(d, "y", 0, eq_str)
-  dict.fold(d2, 0, fn(acc, _k, _v) -> acc + 1) |> should.equal_int(2)
+  dict.fold(d2, 0, fn(acc, _k, _v) -> acc + 1) |> test_should.equal_int(2)
 
 // map_values
 
 pub fn map_values_double_test() -> String:
   let d = dict.insert(dict.new(), "x", 5, eq_str)
   let d2 = dict.map_values(d, fn(v) -> v * 2)
-  dict.get(d2, "x", 0, eq_str) |> should.equal_int(10)
+  dict.get(d2, "x", 0, eq_str) |> test_should.equal_int(10)
 
 pub fn map_values_preserves_size_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let d2 = dict.insert(d, "b", 2, eq_str)
   let d3 = dict.map_values(d2, fn(v) -> v + 100)
-  dict.size(d3) |> should.equal_int(2)
+  dict.size(d3) |> test_should.equal_int(2)
 
 // filter
 
@@ -108,12 +108,12 @@ pub fn filter_keeps_matching_test() -> String:
   let d2 = dict.insert(d, "b", 2, eq_str)
   let d3 = dict.insert(d2, "c", 3, eq_str)
   let evens = dict.filter(d3, fn(_k, v) -> v == 2)
-  dict.size(evens) |> should.equal_int(1)
+  dict.size(evens) |> test_should.equal_int(1)
 
 pub fn filter_removes_all_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let none = dict.filter(d, fn(_k, v) -> v == 99)
-  dict.size(none) |> should.equal_int(0)
+  dict.size(none) |> test_should.equal_int(0)
 
 // merge
 
@@ -121,47 +121,47 @@ pub fn merge_two_dicts_test() -> String:
   let d1 = dict.insert(dict.new(), "a", 1, eq_str)
   let d2 = dict.insert(dict.new(), "b", 2, eq_str)
   let m = dict.merge(d1, d2, eq_str)
-  dict.size(m) |> should.equal_int(2)
+  dict.size(m) |> test_should.equal_int(2)
 
 pub fn merge_override_test() -> String:
   let d1 = dict.insert(dict.new(), "k", 1, eq_str)
   let d2 = dict.insert(dict.new(), "k", 99, eq_str)
   let m = dict.merge(d1, d2, eq_str)
-  dict.get(m, "k", 0, eq_str) |> should.equal_int(99)
+  dict.get(m, "k", 0, eq_str) |> test_should.equal_int(99)
 
 // from_list / to_list
 
 pub fn from_list_test() -> String:
   let pairs = [#("x", 1), #("y", 2)]
   let d = dict.from_list(pairs, eq_str)
-  dict.size(d) |> should.equal_int(2)
+  dict.size(d) |> test_should.equal_int(2)
 
 pub fn from_list_get_test() -> String:
   let pairs = [#("name", 42)]
   let d = dict.from_list(pairs, eq_str)
-  dict.get(d, "name", 0, eq_str) |> should.equal_int(42)
+  dict.get(d, "name", 0, eq_str) |> test_should.equal_int(42)
 
 pub fn to_list_single_test() -> String:
   let d = dict.insert(dict.new(), "only", 5, eq_str)
   case dict.to_list(d):
     [#("only", 5)] -> ""
-    _ -> should.fail("unexpected to_list result")
+    _ -> test_should.fail("unexpected to_list result")
 
 pub fn to_list_empty_test() -> String:
   case dict.to_list(dict.new()):
     [] -> ""
-    _ -> should.fail("expected empty list")
+    _ -> test_should.fail("expected empty list")
 
 // update
 
 pub fn update_existing_test() -> String:
   let d = dict.insert(dict.new(), "n", 10, eq_str)
   let d2 = dict.update(d, "n", fn(v) -> v + 1, eq_str)
-  dict.get(d2, "n", 0, eq_str) |> should.equal_int(11)
+  dict.get(d2, "n", 0, eq_str) |> test_should.equal_int(11)
 
 pub fn update_missing_is_noop_test() -> String:
   let d = dict.update(dict.new(), "x", fn(v) -> v + 1, eq_str)
-  dict.has_key(d, "x", eq_str) |> should.be_false()
+  dict.has_key(d, "x", eq_str) |> test_should.be_false()
 
 // find_keys
 
@@ -171,22 +171,22 @@ pub fn find_keys_test() -> String:
   let big = dict.find_keys(d2, fn(_k, v) -> v > 15)
   case big:
     ["b"] -> ""
-    _ -> should.fail("expected only key b")
+    _ -> test_should.fail("expected only key b")
 
 pub fn find_keys_none_test() -> String:
   let d = dict.insert(dict.new(), "a", 1, eq_str)
   let found = dict.find_keys(d, fn(_k, v) -> v > 100)
   case found:
     [] -> ""
-    _ -> should.fail("expected no keys found")
+    _ -> test_should.fail("expected no keys found")
 
 // int keys
 
 pub fn int_key_test() -> String:
   let d = dict.insert(dict.new(), 1, "one", eq_int)
   let d2 = dict.insert(d, 2, "two", eq_int)
-  dict.get(d2, 1, "", eq_int) |> should.equal_string("one")
+  dict.get(d2, 1, "", eq_int) |> test_should.equal_string("one")
 
 pub fn int_key_has_key_test() -> String:
   let d = dict.insert(dict.new(), 42, "yes", eq_int)
-  dict.has_key(d, 42, eq_int) |> should.be_true()
+  dict.has_key(d, 42, eq_int) |> test_should.be_true()

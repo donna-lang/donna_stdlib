@@ -1,74 +1,74 @@
 import shell
 import string
-import unittest/should
+import test_should
 
 // run — raw command string, returns exit code
 
 pub fn run_true_test() -> String:
-  shell.run("true") |> should.equal_int(0)
+  shell.run("true") |> test_should.equal_int(0)
 
 pub fn run_false_test() -> String:
   let code = shell.run("false")
   case code == 0:
-    True -> should.fail("expected non-zero exit code")
+    True -> test_should.fail("expected non-zero exit code")
     False -> ""
 
 pub fn run_exit_code_test() -> String:
-  shell.run("exit 0") |> should.equal_int(0)
+  shell.run("exit 0") |> test_should.equal_int(0)
 
 // capture — raw command string, returns stdout
 
 pub fn capture_echo_test() -> String:
-  shell.capture("echo hello") |> should.equal_string("hello")
+  shell.capture("echo hello") |> test_should.equal_string("hello")
 
 pub fn capture_empty_test() -> String:
   let out = shell.capture("true")
-  string.is_empty(out) |> should.be_true()
+  string.is_empty(out) |> test_should.be_true()
 
 pub fn capture_multiword_test() -> String:
   let out = shell.capture("echo foo bar")
-  string.equal(out, "foo bar") |> should.be_true()
+  string.equal(out, "foo bar") |> test_should.be_true()
 
 // exec — command + args list
 
 pub fn exec_true_test() -> String:
-  shell.exec("true", []) |> should.equal_int(0)
+  shell.exec("true", []) |> test_should.equal_int(0)
 
 pub fn exec_with_args_test() -> String:
-  shell.exec("test", ["-n", "hello"]) |> should.equal_int(0)
+  shell.exec("test", ["-n", "hello"]) |> test_should.equal_int(0)
 
 pub fn exec_false_test() -> String:
   let code = shell.exec("false", [])
   case code == 0:
-    True -> should.fail("expected non-zero")
+    True -> test_should.fail("expected non-zero")
     False -> ""
 
 // output — capture stdout of command + args
 
 pub fn output_echo_test() -> String:
-  shell.output("echo", ["captured"]) |> should.equal_string("captured")
+  shell.output("echo", ["captured"]) |> test_should.equal_string("captured")
 
 pub fn output_multiple_args_test() -> String:
-  shell.output("echo", ["a", "b", "c"]) |> should.equal_string("a b c")
+  shell.output("echo", ["a", "b", "c"]) |> test_should.equal_string("a b c")
 
 // output_with_err — capture stdout+stderr
 
 pub fn output_with_err_test() -> String:
   let out = shell.output_with_err("echo", ["stderr_test"])
-  string.starts_with(out, "stderr_test") |> should.be_true()
+  string.starts_with(out, "stderr_test") |> test_should.be_true()
 
 // exec_in — run command in a specific directory
 
 pub fn exec_in_test() -> String:
-  shell.exec_in("test", ["-d", "."], "/tmp") |> should.equal_int(0)
+  shell.exec_in("test", ["-d", "."], "/tmp") |> test_should.equal_int(0)
 
 pub fn exec_in_check_dir_test() -> String:
   let out = shell.output_with_err("pwd", [])
   case string.is_empty(out):
-    True -> should.fail("pwd returned empty")
+    True -> test_should.fail("pwd returned empty")
     False -> ""
 
 // exec with no args same as run
 
 pub fn exec_no_args_test() -> String:
-  shell.exec("echo", []) |> should.equal_int(0)
+  shell.exec("echo", []) |> test_should.equal_int(0)

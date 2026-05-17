@@ -1,88 +1,88 @@
 import option
-import unittest/should
+import test_should
 
 pub fn is_some_true_test() -> String:
-  option.is_some(option.Some(1)) |> should.be_true()
+  option.is_some(option.Some(1)) |> test_should.be_true()
 
 pub fn is_some_false_test() -> String:
-  option.is_some(option.None) |> should.be_false()
+  option.is_some(option.None) |> test_should.be_false()
 
 pub fn is_none_true_test() -> String:
-  option.is_none(option.None) |> should.be_true()
+  option.is_none(option.None) |> test_should.be_true()
 
 pub fn is_none_false_test() -> String:
-  option.is_none(option.Some(1)) |> should.be_false()
+  option.is_none(option.Some(1)) |> test_should.be_false()
 
 pub fn unwrap_some_test() -> String:
-  option.unwrap(option.Some(42), 0) |> should.equal_int(42)
+  option.unwrap(option.Some(42), 0) |> test_should.equal_int(42)
 
 pub fn unwrap_none_test() -> String:
-  option.unwrap(option.None, 99) |> should.equal_int(99)
+  option.unwrap(option.None, 99) |> test_should.equal_int(99)
 
 pub fn map_some_test() -> String:
   option.map(option.Some(5), fn(x: Int) -> x * 2)
   |> option.unwrap(0)
-  |> should.equal_int(10)
+  |> test_should.equal_int(10)
 
 pub fn map_none_test() -> String:
   option.map(option.None, fn(x: Int) -> x * 2)
   |> option.is_none()
-  |> should.be_true()
+  |> test_should.be_true()
 
 pub fn then_some_test() -> String:
   option.then(option.Some(5), fn(x: Int) -> option.Some(x + 1))
   |> option.unwrap(0)
-  |> should.equal_int(6)
+  |> test_should.equal_int(6)
 
 pub fn then_none_test() -> String:
   option.then(option.None, fn(x: Int) -> option.Some(x + 1))
   |> option.is_none()
-  |> should.be_true()
+  |> test_should.be_true()
 
 pub fn then_returns_none_test() -> String:
   option.then(option.Some(5), fn(_x: Int) -> option.None)
   |> option.is_none()
-  |> should.be_true()
+  |> test_should.be_true()
 
 pub fn or_some_test() -> String:
   option.or(option.Some(1), option.Some(2))
   |> option.unwrap(0)
-  |> should.equal_int(1)
+  |> test_should.equal_int(1)
 
 pub fn or_none_test() -> String:
   option.or(option.None, option.Some(2))
   |> option.unwrap(0)
-  |> should.equal_int(2)
+  |> test_should.equal_int(2)
 
 pub fn lazy_unwrap_some_test() -> String:
   option.lazy_unwrap(option.Some(7), fn() -> 99)
-  |> should.equal_int(7)
+  |> test_should.equal_int(7)
 
 pub fn lazy_unwrap_none_test() -> String:
   option.lazy_unwrap(option.None, fn() -> 99)
-  |> should.equal_int(99)
+  |> test_should.equal_int(99)
 
 pub fn filter_pass_test() -> String:
   option.filter(option.Some(4), fn(x: Int) -> x > 0)
   |> option.unwrap(0)
-  |> should.equal_int(4)
+  |> test_should.equal_int(4)
 
 pub fn filter_fail_test() -> String:
   option.filter(option.Some(-1), fn(x: Int) -> x > 0)
   |> option.is_none()
-  |> should.be_true()
+  |> test_should.be_true()
 
 pub fn filter_none_test() -> String:
   option.filter(option.None, fn(x: Int) -> x > 0)
   |> option.is_none()
-  |> should.be_true()
+  |> test_should.be_true()
 
 pub fn to_list_some_test() -> String:
   case option.to_list(option.Some(42)):
-    [x] -> should.equal_int(x, 42)
-    _ -> should.fail("expected one element")
+    [x] -> test_should.equal_int(x, 42)
+    _ -> test_should.fail("expected one element")
 
 pub fn to_list_none_test() -> String:
   case option.to_list(option.None):
     [] -> ""
-    _ -> should.fail("expected empty list")
+    _ -> test_should.fail("expected empty list")
