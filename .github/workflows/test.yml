@@ -11,27 +11,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Checkout Donna tools
-        uses: actions/checkout@v4
-        with:
-          repository: donna-lang/donna
-          path: .donna-tools/compiler
-
       - name: Install build tools and QBE
         shell: bash
         run: |
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y build-essential git make
+          git clone --depth 1 https://github.com/donna-lang/donna .donna-tools/compiler
           make -C .donna-tools/compiler install-qbe
           qbe --version || true
 
-      - name: Build Donna
-        shell: bash
+      - name: Download Donna main binary
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          repo: donna-lang/donna
+          workflow: test.yml
+          branch: main
+          name: donna-main-linux-x86_64
+          path: .donna-main-bin
+
+      - name: Install Donna
         run: |
-          set -euo pipefail
-          make -C .donna-tools/compiler build
-          echo "$GITHUB_WORKSPACE/.donna-tools/compiler/build/bin" >> "$GITHUB_PATH"
+          chmod +x .donna-main-bin/donna
+          echo "$GITHUB_WORKSPACE/.donna-main-bin" >> "$GITHUB_PATH"
 
       - name: Format
         run: |
