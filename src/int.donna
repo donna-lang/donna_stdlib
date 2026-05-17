@@ -1,6 +1,6 @@
 //// Integer utilities for Donna.
 
-import donna/option
+import option
 
 /// Parse a decimal integer string. Returns Some(n) on success.
 /// Note: uses atoi — always returns Some; invalid strings give 0.

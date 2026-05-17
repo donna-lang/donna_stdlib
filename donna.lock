@@ -6,5 +6,5 @@ rev = "fbaac2a3a5236424f7685762f4bc915199e5ae68"
 
 [packages.donna]
 git = "https://github.com/donna-lang/donna_stdlib"
-rev = "8ce1745379cd7a620478e888bd4c47d005937abb"
+rev = "9b890a311c5a954063a75f4c0a7a5276409b21a4"
 

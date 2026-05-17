@@ -1,6 +1,6 @@
 //// List utilities for Donna.
 
-import donna/string
+import string
 
 /// Return the number of elements in a list.
 ///
