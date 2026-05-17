@@ -34,6 +34,8 @@ long donna_float_is_positive(double x);
 long donna_float_is_negative(double x);
 long donna_float_is_zero(double x);
 char *donna_string_char_from_code(long code);
+long donna_ffi_string_index_of(const char *s, const char *sub, long from);
+char *donna_ffi_string_replace(const char *s, const char *from, const char *to);
 int donna_ffi_shell_exec(const char *cmd);
 char *donna_ffi_shell_capture(const char *cmd);
 char *donna_ffi_file_read(const char *path);
@@ -118,6 +120,66 @@ char *donna_string_char_from_code(long code) {
     s[0] = (char)(code & 0xFF);
     s[1] = '\0';
     return s;
+}
+
+long donna_ffi_string_index_of(const char *s, const char *sub, long from) {
+    if (!s || !sub) return -1;
+
+    size_t slen = strlen(s);
+    size_t sublen = strlen(sub);
+    if (from < 0) from = 0;
+    if ((size_t)from > slen) return -1;
+    if (sublen == 0) return from;
+    if (sublen > slen) return -1;
+
+    for (size_t i = (size_t)from; i + sublen <= slen; i++) {
+        if (memcmp(s + i, sub, sublen) == 0) return (long)i;
+    }
+    return -1;
+}
+
+char *donna_ffi_string_replace(const char *s, const char *from, const char *to) {
+    if (!s) return strdup("");
+    if (!from || !to) return strdup(s);
+
+    size_t slen = strlen(s);
+    size_t flen = strlen(from);
+    size_t tlen = strlen(to);
+    if (flen == 0) return strdup(s);
+
+    size_t count = 0;
+    for (size_t i = 0; i + flen <= slen;) {
+        if (memcmp(s + i, from, flen) == 0) {
+            count++;
+            i += flen;
+        } else {
+            i++;
+        }
+    }
+    if (count == 0) return strdup(s);
+
+    size_t out_len = slen;
+    if (tlen >= flen) {
+        out_len += count * (tlen - flen);
+    } else {
+        out_len -= count * (flen - tlen);
+    }
+    char *out = malloc(out_len + 1);
+    if (!out) return strdup("");
+
+    size_t i = 0;
+    size_t j = 0;
+    while (i < slen) {
+        if (i + flen <= slen && memcmp(s + i, from, flen) == 0) {
+            memcpy(out + j, to, tlen);
+            i += flen;
+            j += tlen;
+        } else {
+            out[j++] = s[i++];
+        }
+    }
+    out[j] = '\0';
+    return out;
 }
 
 /* Shell helpers */

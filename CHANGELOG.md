@@ -2,6 +2,13 @@
 
 All notable changes to `donna_stdlib` will be documented in this file.
 
+## Unreleased
+
+## [0.2.0] — 2026-05-17
+
+### Changed
+  * Optimized `string.index_of`, `string.index_of_from`, `string.contains`, and `string.replace` with C-backed scanning helpers while keeping the Donna API unchanged.
+
 ## [0.1.0] — 2026-05-07
 
 Initial release.

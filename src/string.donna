@@ -88,6 +88,12 @@ pub fn ends_with(s: String, suffix: String) -> Bool:
 @external("c", "donna_string_char_from_code")
 pub fn char_from_code(n: Int) -> String
 
+@external("c", "donna_ffi_string_index_of")
+fn ffi_index_of(s: String, sub: String, from: Int) -> Int
+
+@external("c", "donna_ffi_string_replace")
+fn ffi_replace(s: String, from: String, to: String) -> String
+
 /// Convert an Int to its string representation.
 ///
 /// ```donna
@@ -146,14 +152,7 @@ pub fn index_of(s: String, sub: String) -> Int:
 /// string.index_of_from("abcabc", "abc", 1)
 /// ```
 pub fn index_of_from(s: String, sub: String, from: Int) -> Int:
-  let slen = string_length(s)
-  let sublen = string_length(sub)
-  case from + sublen > slen:
-    True -> -1
-    False ->
-      case string_equal(substring(s, from, sublen), sub):
-        True -> from
-        False -> index_of_from(s, sub, from + 1)
+  ffi_index_of(s, sub, from)
 
 /// Split a string by a separator. Returns list of parts.
 ///
@@ -261,41 +260,7 @@ fn is_ws(c: String) -> Bool:
 /// string.replace("hello world", "world", "Donna")
 /// ```
 pub fn replace(s: String, from: String, to: String) -> String:
-  let slen = string_length(s)
-  let flen = string_length(from)
-  case flen == 0:
-    True -> s
-    False -> replace_helper(s, from, to, slen, flen, 0, 0, "")
-
-fn replace_helper(
-  s: String,
-  from: String,
-  to: String,
-  slen: Int,
-  flen: Int,
-  start: Int,
-  i: Int,
-  acc: String
-) -> String:
-  case i + flen > slen:
-    True ->
-      acc <> substring(s, start, slen - start)
-    False ->
-      case string_equal(substring(s, i, flen), from):
-        True ->
-          let piece = substring(s, start, i - start)
-          replace_helper(
-            s,
-            from,
-            to,
-            slen,
-            flen,
-            i + flen,
-            i + flen,
-            acc <> piece <> to
-          )
-        False ->
-          replace_helper(s, from, to, slen, flen, start, i + 1, acc)
+  ffi_replace(s, from, to)
 
 /// Join a list of strings with a separator between each element.
 ///

@@ -95,6 +95,15 @@ pub fn index_of_not_found_test() -> String:
 pub fn index_of_start_test() -> String:
   string.index_of("abcabc", "abc") |> should.equal_int(0)
 
+pub fn index_of_from_test() -> String:
+  string.index_of_from("abcabc", "abc", 1) |> should.equal_int(3)
+
+pub fn index_of_empty_substring_test() -> String:
+  string.index_of_from("abc", "", 2) |> should.equal_int(2)
+
+pub fn index_of_from_after_end_test() -> String:
+  string.index_of_from("abc", "a", 4) |> should.equal_int(-1)
+
 // split
 
 pub fn split_basic_test() -> String:
@@ -145,6 +154,15 @@ pub fn replace_all_test() -> String:
 
 pub fn replace_not_found_test() -> String:
   string.replace("hello", "xyz", "!") |> should.equal_string("hello")
+
+pub fn replace_empty_from_test() -> String:
+  string.replace("hello", "", "!") |> should.equal_string("hello")
+
+pub fn replace_non_overlapping_test() -> String:
+  string.replace("aaaa", "aa", "b") |> should.equal_string("bb")
+
+pub fn replace_keeps_tail_test() -> String:
+  string.replace("aaa", "aa", "b") |> should.equal_string("ba")
 
 // to_int
 
