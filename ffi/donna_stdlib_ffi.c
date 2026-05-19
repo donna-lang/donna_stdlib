@@ -18,6 +18,7 @@
 #ifdef _WIN32
 #include <direct.h>
 #include <windows.h>
+#include <dirent.h>
 #else
 #include <dirent.h>
 #include <unistd.h>
