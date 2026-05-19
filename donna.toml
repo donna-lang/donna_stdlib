@@ -1,5 +1,5 @@
 name = "donna_stdlib"
-version = "0.2.0"
+version = "0.3.0"
 description = "The Donna standard library"
 licences = ["MIT"]
 repository = { type = "github", user = "donna-lang", repo = "donna_stdlib" }
