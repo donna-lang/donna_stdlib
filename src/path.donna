@@ -181,7 +181,13 @@ fn split_loop(s: String, start: Int, i: Int, acc: List(String)) -> List(String):
         True ->
           case i == start:
             True -> split_loop(s, i + 1, i + 1, acc)
-            False -> split_loop(s, i + 1, i + 1, [string.slice(s, start, i - start), ..acc])
+            False ->
+              split_loop(
+                s,
+                i + 1,
+                i + 1,
+                [string.slice(s, start, i - start), ..acc]
+              )
         False -> split_loop(s, start, i + 1, acc)
 
 /// Normalize separators and simple "." / ".." path segments.
