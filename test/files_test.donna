@@ -32,6 +32,16 @@ pub fn is_dir_false_for_file_test() -> String:
 pub fn is_dir_missing_test() -> String:
   files.is_dir("/tmp/donna_stdlib_no_such_dir_xyz") |> test_should.be_false()
 
+pub fn mkdir_all_creates_nested_dirs_test() -> String:
+  let dir = "/tmp/donna_stdlib_mkdir_all/a/b/c"
+  let _ = shell_rm("/tmp/donna_stdlib_mkdir_all")
+  let code = files.mkdir_all(dir)
+  let ok = files.is_dir(dir)
+  let _ = shell_rm("/tmp/donna_stdlib_mkdir_all")
+  case code == 0:
+    True -> ok |> test_should.be_true()
+    False -> test_should.fail("mkdir_all should return zero")
+
 // write / read
 
 pub fn write_read_test() -> String:
@@ -116,6 +126,26 @@ pub fn delete_missing_returns_nonzero_test() -> String:
     True -> test_should.fail("deleting missing file should return non-zero")
     False -> ""
 
+pub fn remove_dir_removes_empty_dir_test() -> String:
+  let dir = "/tmp/donna_stdlib_remove_dir"
+  let _ = shell_rm(dir)
+  let _ = files.mkdir(dir)
+  let code = files.remove_dir(dir)
+  case code == 0:
+    True -> files.exists(dir) |> test_should.be_false()
+    False -> test_should.fail("remove_dir should return zero")
+
+pub fn remove_all_removes_nested_tree_test() -> String:
+  let dir = "/tmp/donna_stdlib_remove_all"
+  let nested = dir <> "/a/b"
+  let _ = shell_rm(dir)
+  let _ = files.mkdir_all(nested)
+  let _ = files.write(nested <> "/file.txt", "x")
+  let code = files.remove_all(dir)
+  case code == 0:
+    True -> files.exists(dir) |> test_should.be_false()
+    False -> test_should.fail("remove_all should return zero")
+
 // copy
 
 pub fn copy_test() -> String:
@@ -137,6 +167,21 @@ pub fn copy_independent_test() -> String:
   let content = files.read(dst)
   let _ = files.delete(dst)
   string.equal(content, "original") |> test_should.be_true()
+
+pub fn rename_test() -> String:
+  let src = "/tmp/donna_stdlib_rename_src.txt"
+  let dst = "/tmp/donna_stdlib_rename_dst.txt"
+  let _ = files.delete(src)
+  let _ = files.delete(dst)
+  let _ = files.write(src, "renamed")
+  let code = files.rename(src, dst)
+  let content = files.read(dst)
+  let src_exists = files.exists(src)
+  let _ = files.delete(dst)
+  case code == 0:
+    True ->
+      test_should.be_false(src_exists) <> test_should.equal_string(content, "renamed")
+    False -> test_should.fail("rename should return zero")
 
 // list_dir
 
@@ -164,49 +209,14 @@ pub fn list_dir_empty_test() -> String:
     [] -> ""
     _ -> test_should.fail("expected empty listing")
 
-// Path utilities
-
-pub fn join_test() -> String:
-  files.join("src", "main.donna") |> test_should.equal_string("src/main.donna")
-
-pub fn join_nested_test() -> String:
-  files.join("a/b", "c.txt") |> test_should.equal_string("a/b/c.txt")
-
-pub fn basename_simple_test() -> String:
-  files.basename("src/main.donna") |> test_should.equal_string("main.donna")
-
-pub fn basename_no_dir_test() -> String:
-  files.basename("Makefile") |> test_should.equal_string("Makefile")
-
-pub fn basename_deep_test() -> String:
-  files.basename("a/b/c.txt") |> test_should.equal_string("c.txt")
-
-pub fn dirname_test() -> String:
-  files.dirname("src/main.donna") |> test_should.equal_string("src")
-
-pub fn dirname_no_dir_test() -> String:
-  files.dirname("Makefile") |> test_should.equal_string(".")
-
-pub fn dirname_deep_test() -> String:
-  files.dirname("a/b/c.txt") |> test_should.equal_string("a/b")
-
-pub fn extension_test() -> String:
-  files.extension("main.donna") |> test_should.equal_string(".donna")
-
-pub fn extension_c_test() -> String:
-  files.extension("ffi.c") |> test_should.equal_string(".c")
-
-pub fn extension_none_test() -> String:
-  files.extension("Makefile") |> test_should.equal_string("")
-
-pub fn drop_extension_test() -> String:
-  files.drop_extension("main.donna") |> test_should.equal_string("main")
-
-pub fn drop_extension_with_dir_test() -> String:
-  files.drop_extension("src/foo.c") |> test_should.equal_string("src/foo")
-
-pub fn drop_extension_no_ext_test() -> String:
-  files.drop_extension("Makefile") |> test_should.equal_string("Makefile")
+pub fn read_lines_test() -> String:
+  let path = "/tmp/donna_stdlib_read_lines.txt"
+  let _ = files.write(path, "one\ntwo\nthree")
+  let lines = files.read_lines(path)
+  let _ = files.delete(path)
+  case lines:
+    ["one", "two", "three"] -> ""
+    _ -> test_should.fail("expected three lines")
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 

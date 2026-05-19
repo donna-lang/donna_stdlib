@@ -13,18 +13,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <dirent.h>
+#include <errno.h>
+#include <math.h>
 #ifdef _WIN32
 #include <direct.h>
+#include <windows.h>
 #else
+#include <dirent.h>
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 #include <time.h>
 
 long donna_ffi_time_now_ms(void);
 long donna_ffi_time_now_us(void);
+long donna_ffi_time_unix_seconds(void);
+long donna_ffi_time_unix_ms(void);
+void donna_ffi_time_sleep_ms(long ms);
 const char *donna_rt_getenv(const char *name);
 void donna_rt_flush(void);
+void donna_ffi_io_print(const char *s);
+void donna_ffi_io_eprint(const char *s);
+void donna_ffi_io_flush_stderr(void);
+char *donna_ffi_io_read_line(void);
+char *donna_ffi_io_read_all_stdin(void);
 char *donna_float_to_string(double d);
 double donna_float_parse(const char *s);
 double donna_float_min(double a, double b);
@@ -33,9 +45,16 @@ double donna_float_clamp(double x, double lo, double hi);
 long donna_float_is_positive(double x);
 long donna_float_is_negative(double x);
 long donna_float_is_zero(double x);
+long donna_float_equal(double a, double b);
+long donna_float_near(double a, double b, double tolerance);
+long donna_float_is_nan(double x);
+long donna_float_is_infinite(double x);
+long donna_float_is_finite(double x);
+long donna_float_sign(double x);
 char *donna_string_char_from_code(long code);
 long donna_ffi_string_index_of(const char *s, const char *sub, long from);
 char *donna_ffi_string_replace(const char *s, const char *from, const char *to);
+char *donna_ffi_path_separator(void);
 int donna_ffi_shell_exec(const char *cmd);
 char *donna_ffi_shell_capture(const char *cmd);
 char *donna_ffi_file_read(const char *path);
@@ -45,8 +64,11 @@ int donna_ffi_file_exists(const char *path);
 int donna_ffi_file_is_file(const char *path);
 int donna_ffi_file_is_dir(const char *path);
 int donna_ffi_file_mkdir(const char *path);
+int donna_ffi_file_mkdir_all(const char *path);
 int donna_ffi_file_delete(const char *path);
+int donna_ffi_file_remove_all(const char *path);
 int donna_ffi_file_copy(const char *src, const char *dst);
+int donna_ffi_file_rename(const char *src, const char *dst);
 char *donna_ffi_file_list_dir(const char *path);
 __attribute__((weak)) long donna_program_main(void);
 
@@ -65,15 +87,60 @@ char *strndup(const char *s, size_t n) {
 /* Time */
 
 long donna_ffi_time_now_ms(void) {
+#ifdef _WIN32
+    LARGE_INTEGER freq, counter;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&counter);
+    return (long)((counter.QuadPart * 1000LL) / freq.QuadPart);
+#else
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (long)ts.tv_sec * 1000L + (long)(ts.tv_nsec / 1000000L);
+#endif
 }
 
 long donna_ffi_time_now_us(void) {
+#ifdef _WIN32
+    LARGE_INTEGER freq, counter;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&counter);
+    return (long)((counter.QuadPart * 1000000LL) / freq.QuadPart);
+#else
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (long)ts.tv_sec * 1000000L + (long)(ts.tv_nsec / 1000L);
+#endif
+}
+
+long donna_ffi_time_unix_seconds(void) {
+    return (long)time(NULL);
+}
+
+long donna_ffi_time_unix_ms(void) {
+#ifdef _WIN32
+    FILETIME ft;
+    ULARGE_INTEGER uli;
+    GetSystemTimeAsFileTime(&ft);
+    uli.LowPart = ft.dwLowDateTime;
+    uli.HighPart = ft.dwHighDateTime;
+    return (long)((uli.QuadPart - 116444736000000000ULL) / 10000ULL);
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    return (long)tv.tv_sec * 1000L + (long)(tv.tv_usec / 1000L);
+#endif
+}
+
+void donna_ffi_time_sleep_ms(long ms) {
+    if (ms <= 0) return;
+#ifdef _WIN32
+    Sleep((DWORD)ms);
+#else
+    struct timespec req;
+    req.tv_sec = ms / 1000L;
+    req.tv_nsec = (ms % 1000L) * 1000000L;
+    while (nanosleep(&req, &req) == -1 && errno == EINTR) {}
+#endif
 }
 
 /* Environment */
@@ -85,6 +152,62 @@ const char* donna_rt_getenv(const char* name) {
 
 void donna_rt_flush(void) {
     fflush(stdout);
+}
+
+/* IO helpers */
+
+void donna_ffi_io_print(const char *s) {
+    if (!s) return;
+    fputs(s, stdout);
+}
+
+void donna_ffi_io_eprint(const char *s) {
+    if (!s) return;
+    fputs(s, stderr);
+}
+
+void donna_ffi_io_flush_stderr(void) {
+    fflush(stderr);
+}
+
+char *donna_ffi_io_read_line(void) {
+    size_t cap = 128;
+    size_t len = 0;
+    char *buf = malloc(cap);
+    if (!buf) return strdup("");
+
+    int c;
+    while ((c = getchar()) != EOF && c != '\n') {
+        if (len + 1 >= cap) {
+            cap *= 2;
+            char *new_buf = realloc(buf, cap);
+            if (!new_buf) { free(buf); return strdup(""); }
+            buf = new_buf;
+        }
+        buf[len++] = (char)c;
+    }
+    buf[len] = '\0';
+    return buf;
+}
+
+char *donna_ffi_io_read_all_stdin(void) {
+    size_t cap = 4096;
+    size_t len = 0;
+    char *buf = malloc(cap);
+    if (!buf) return strdup("");
+
+    int c;
+    while ((c = getchar()) != EOF) {
+        if (len + 1 >= cap) {
+            cap *= 2;
+            char *new_buf = realloc(buf, cap);
+            if (!new_buf) { free(buf); return strdup(""); }
+            buf = new_buf;
+        }
+        buf[len++] = (char)c;
+    }
+    buf[len] = '\0';
+    return buf;
 }
 
 /* Float helpers */
@@ -111,6 +234,20 @@ double donna_float_clamp(double x, double lo, double hi) {
 long donna_float_is_positive(double x) { return x > 0.0 ? 1 : 0; }
 long donna_float_is_negative(double x) { return x < 0.0 ? 1 : 0; }
 long donna_float_is_zero(double x) { return x == 0.0 ? 1 : 0; }
+long donna_float_equal(double a, double b) { return a == b ? 1 : 0; }
+long donna_float_near(double a, double b, double tolerance) {
+    if (tolerance < 0.0) return 0;
+    if (isnan(a) || isnan(b)) return 0;
+    return fabs(a - b) <= tolerance ? 1 : 0;
+}
+long donna_float_is_nan(double x) { return isnan(x) ? 1 : 0; }
+long donna_float_is_infinite(double x) { return isinf(x) ? 1 : 0; }
+long donna_float_is_finite(double x) { return isfinite(x) ? 1 : 0; }
+long donna_float_sign(double x) {
+    if (x > 0.0) return 1;
+    if (x < 0.0) return -1;
+    return 0;
+}
 
 /* String helpers */
 
@@ -180,6 +317,16 @@ char *donna_ffi_string_replace(const char *s, const char *from, const char *to) 
     }
     out[j] = '\0';
     return out;
+}
+
+/* Path helpers */
+
+char *donna_ffi_path_separator(void) {
+#ifdef _WIN32
+    return strdup("\\");
+#else
+    return strdup("/");
+#endif
 }
 
 /* Shell helpers */
@@ -290,9 +437,98 @@ int donna_ffi_file_mkdir(const char *path) {
 #endif
 }
 
+int donna_ffi_file_mkdir_all(const char *path) {
+    if (!path || path[0] == '\0') return -1;
+    if (donna_ffi_file_is_dir(path)) return 0;
+
+    char *tmp = strdup(path);
+    if (!tmp) return -1;
+    size_t len = strlen(tmp);
+    while (len > 1 && (tmp[len - 1] == '/' || tmp[len - 1] == '\\')) {
+        tmp[--len] = '\0';
+    }
+
+    for (char *p = tmp + 1; *p; p++) {
+        if (*p == '/' || *p == '\\') {
+            char old = *p;
+            *p = '\0';
+#ifdef _WIN32
+            if (strlen(tmp) == 2 && tmp[1] == ':') {
+                *p = old;
+                continue;
+            }
+#endif
+            if (tmp[0] != '\0' && !donna_ffi_file_is_dir(tmp)) {
+                if (donna_ffi_file_mkdir(tmp) != 0) {
+                    free(tmp);
+                    return -1;
+                }
+            }
+            *p = old;
+        }
+    }
+
+    int rc = 0;
+    if (!donna_ffi_file_is_dir(tmp)) rc = donna_ffi_file_mkdir(tmp);
+    free(tmp);
+    return rc;
+}
+
 /* Delete a file or empty directory. Returns 0 on success, -1 on error. */
 int donna_ffi_file_delete(const char *path) {
     return remove(path);
+}
+
+int donna_ffi_file_remove_all(const char *path) {
+    if (!path || path[0] == '\0') return -1;
+    if (!donna_ffi_file_exists(path)) return 0;
+    if (donna_ffi_file_is_file(path)) return remove(path);
+
+#ifdef _WIN32
+    WIN32_FIND_DATAA data;
+    size_t path_len = strlen(path);
+    char *pattern = malloc(path_len + 3);
+    if (!pattern) return -1;
+    snprintf(pattern, path_len + 3, "%s\\*", path);
+    HANDLE h = FindFirstFileA(pattern, &data);
+    free(pattern);
+    if (h == INVALID_HANDLE_VALUE) return _rmdir(path);
+    do {
+        const char *name = data.cFileName;
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) continue;
+        char sep = '\\';
+        char *child = malloc(strlen(path) + strlen(name) + 2);
+        if (!child) { FindClose(h); return -1; }
+        sprintf(child, "%s%c%s", path, sep, name);
+        if (donna_ffi_file_remove_all(child) != 0) {
+            free(child);
+            FindClose(h);
+            return -1;
+        }
+        free(child);
+    } while (FindNextFileA(h, &data));
+    FindClose(h);
+    return _rmdir(path);
+#else
+    DIR *dp = opendir(path);
+    if (!dp) return remove(path);
+    struct dirent *ent;
+    while ((ent = readdir(dp))) {
+        const char *name = ent->d_name;
+        if (strcmp(name, ".") == 0 || strcmp(name, "..") == 0) continue;
+        char *child = malloc(strlen(path) + strlen(name) + 2);
+        if (!child) { closedir(dp); return -1; }
+        sprintf(child, "%s/%s", path, name);
+        if (donna_ffi_file_remove_all(child) != 0) {
+            free(child);
+            closedir(dp);
+            return -1;
+        }
+        free(child);
+    }
+    closedir(dp);
+    return rmdir(path);
+#endif
 }
 
 /* Copy file src to dst. Returns 0 on success, -1 on error. */
@@ -310,6 +546,10 @@ int donna_ffi_file_copy(const char *src, const char *dst) {
     fclose(in);
     fclose(out);
     return 0;
+}
+
+int donna_ffi_file_rename(const char *src, const char *dst) {
+    return rename(src, dst);
 }
 
 /* List directory entries as a newline-separated string (malloc'd).

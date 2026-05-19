@@ -1,0 +1,308 @@
+//// Path string utilities.
+////
+//// This module handles path manipulation only. Filesystem operations live in
+//// `files`.
+
+import string
+import list
+
+@external("c", "donna_ffi_path_separator")
+fn ffi_separator() -> String
+
+/// Return the current platform path separator.
+///
+/// ```donna
+/// path.separator()
+/// ```
+pub fn separator() -> String:
+  ffi_separator()
+
+/// Join two path segments with the platform separator.
+///
+/// ```donna
+/// path.join("src", "main.donna")
+/// ```
+pub fn join(a: String, b: String) -> String:
+  case string.is_empty(a):
+    True -> b
+    False ->
+      case string.is_empty(b):
+        True -> a
+        False ->
+          case ends_with_separator(a):
+            True -> a <> trim_leading_separators(b)
+            False -> a <> separator() <> trim_leading_separators(b)
+
+/// Join many path segments with the platform separator.
+///
+/// ```donna
+/// path.join_all(["src", "main.donna"])
+/// ```
+pub fn join_all(parts: List(String)) -> String:
+  case parts:
+    [] -> ""
+    [one] -> one
+    [one, ..rest] -> join(one, join_all(rest))
+
+/// Return the final path component.
+///
+/// ```donna
+/// path.basename("src/main.donna")
+/// ```
+pub fn basename(path: String) -> String:
+  trim_trailing_then_basename(trim_trailing_separators(path))
+
+fn trim_trailing_then_basename(path: String) -> String:
+  case string.is_empty(path):
+    True -> ""
+    False -> last_segment(path, 0, 0)
+
+fn last_segment(s: String, start: Int, i: Int) -> String:
+  let len = string.length(s)
+  case i == len:
+    True -> string.slice(s, start, len - start)
+    False ->
+      case is_separator_at(s, i):
+        True -> last_segment(s, i + 1, i + 1)
+        False -> last_segment(s, start, i + 1)
+
+/// Return the directory component of a path.
+///
+/// Returns "." when there is no directory component.
+///
+/// ```donna
+/// path.dirname("src/main.donna")
+/// ```
+pub fn dirname(path: String) -> String:
+  let trimmed = trim_trailing_separators(path)
+  let last_sep = find_last_separator(trimmed, string.length(trimmed) - 1)
+  case last_sep == -1:
+    True -> "."
+    False ->
+      case last_sep == 0:
+        True -> string.slice(trimmed, 0, 1)
+        False -> string.slice(trimmed, 0, last_sep)
+
+/// Return the file extension including the dot, or "" if none.
+///
+/// ```donna
+/// path.extension("src/main.donna")
+/// ```
+pub fn extension(path: String) -> String:
+  let base = basename(path)
+  let dot = find_last_dot(base, string.length(base) - 1)
+  case dot <= 0:
+    True -> ""
+    False -> string.slice(base, dot, string.length(base) - dot)
+
+/// Return the basename without its final extension.
+///
+/// ```donna
+/// path.stem("src/main.donna")
+/// ```
+pub fn stem(path: String) -> String:
+  let base = basename(path)
+  let dot = find_last_dot(base, string.length(base) - 1)
+  case dot <= 0:
+    True -> base
+    False -> string.slice(base, 0, dot)
+
+/// Return the path with the final extension removed.
+///
+/// ```donna
+/// path.drop_extension("src/main.donna")
+/// ```
+pub fn drop_extension(path: String) -> String:
+  let base = basename(path)
+  let dir = dirname(path)
+  let dot = find_last_dot(base, string.length(base) - 1)
+  case dot <= 0:
+    True -> path
+    False ->
+      let dropped = string.slice(base, 0, dot)
+      case string.equal(dir, "."):
+        True -> dropped
+        False -> join(dir, dropped)
+
+/// Return the path with a new extension.
+///
+/// The extension may be passed with or without a leading dot.
+///
+/// ```donna
+/// path.with_extension("src/main.donna", "ssa")
+/// ```
+pub fn with_extension(path: String, ext: String) -> String:
+  let dot_ext = case string.is_empty(ext):
+    True -> ""
+    False ->
+      case string.starts_with(ext, "."):
+        True -> ext
+        False -> "." <> ext
+  drop_extension(path) <> dot_ext
+
+/// Return True when the path is absolute for Unix or Windows syntax.
+///
+/// ```donna
+/// path.is_absolute("/tmp")
+/// ```
+pub fn is_absolute(path: String) -> Bool:
+  case string.length(path) == 0:
+    True -> False
+    False ->
+      case is_separator_at(path, 0):
+        True -> True
+        False -> has_windows_drive_prefix(path)
+
+/// Return True when the path is relative.
+///
+/// ```donna
+/// path.is_relative("src/main.donna")
+/// ```
+pub fn is_relative(path: String) -> Bool:
+  !is_absolute(path)
+
+/// Split a path into non-empty path segments.
+///
+/// ```donna
+/// path.split("src/main.donna")
+/// ```
+pub fn split(path: String) -> List(String):
+  split_loop(path, 0, 0, [])
+
+fn split_loop(s: String, start: Int, i: Int, acc: List(String)) -> List(String):
+  let len = string.length(s)
+  case i >= len:
+    True ->
+      case i == start:
+        True -> list.reverse(acc)
+        False -> list.reverse([string.slice(s, start, i - start), ..acc])
+    False ->
+      case is_separator_at(s, i):
+        True ->
+          case i == start:
+            True -> split_loop(s, i + 1, i + 1, acc)
+            False -> split_loop(s, i + 1, i + 1, [string.slice(s, start, i - start), ..acc])
+        False -> split_loop(s, start, i + 1, acc)
+
+/// Normalize separators and simple "." / ".." path segments.
+///
+/// ```donna
+/// path.normalize("src/./main.donna")
+/// ```
+pub fn normalize(path: String) -> String:
+  let prefix = absolute_prefix(path)
+  let parts = normalize_parts(split(path_without_prefix(path, prefix)), [])
+  let body = join_all(parts)
+  case string.is_empty(prefix):
+    True ->
+      case string.is_empty(body):
+        True -> "."
+        False -> body
+    False ->
+      case string.is_empty(body):
+        True -> prefix
+        False -> join(prefix, body)
+
+fn normalize_parts(parts: List(String), acc: List(String)) -> List(String):
+  case parts:
+    [] -> list.reverse(acc)
+    [p, ..rest] ->
+      case string.equal(p, "."):
+        True -> normalize_parts(rest, acc)
+        False ->
+          case string.equal(p, ".."):
+            True ->
+              case acc:
+                [] -> normalize_parts(rest, [".."])
+                ["..", .._] -> normalize_parts(rest, ["..", ..acc])
+                [_, ..tail] -> normalize_parts(rest, tail)
+            False -> normalize_parts(rest, [p, ..acc])
+
+fn absolute_prefix(path: String) -> String:
+  case string.length(path) == 0:
+    True -> ""
+    False ->
+      case is_separator_at(path, 0):
+        True -> separator()
+        False ->
+          case has_windows_drive_prefix(path):
+            True -> string.slice(path, 0, 2)
+            False -> ""
+
+fn path_without_prefix(path: String, prefix: String) -> String:
+  case string.is_empty(prefix):
+    True -> path
+    False ->
+      case string.equal(prefix, separator()):
+        True -> string.slice(path, 1, string.length(path) - 1)
+        False ->
+          case string.length(path) > 2:
+            True -> string.slice(path, 2, string.length(path) - 2)
+            False -> ""
+
+fn trim_leading_separators(path: String) -> String:
+  trim_leading_loop(path, 0)
+
+fn trim_leading_loop(path: String, i: Int) -> String:
+  case i >= string.length(path):
+    True -> ""
+    False ->
+      case is_separator_at(path, i):
+        True -> trim_leading_loop(path, i + 1)
+        False -> string.slice(path, i, string.length(path) - i)
+
+fn trim_trailing_separators(path: String) -> String:
+  trim_trailing_loop(path, string.length(path) - 1)
+
+fn trim_trailing_loop(path: String, i: Int) -> String:
+  case i <= 0:
+    True -> path
+    False ->
+      case is_separator_at(path, i):
+        True -> trim_trailing_loop(path, i - 1)
+        False -> string.slice(path, 0, i + 1)
+
+fn ends_with_separator(path: String) -> Bool:
+  case string.length(path) == 0:
+    True -> False
+    False -> is_separator_at(path, string.length(path) - 1)
+
+fn is_separator_at(path: String, i: Int) -> Bool:
+  let c = string.char_at(path, i)
+  case c == 47:
+    True -> True
+    False -> c == 92
+
+fn find_last_separator(s: String, i: Int) -> Int:
+  case i < 0:
+    True -> -1
+    False ->
+      case is_separator_at(s, i):
+        True -> i
+        False -> find_last_separator(s, i - 1)
+
+fn find_last_dot(s: String, i: Int) -> Int:
+  case i < 0:
+    True -> -1
+    False ->
+      case string.char_at(s, i) == 46:
+        True -> i
+        False -> find_last_dot(s, i - 1)
+
+fn has_windows_drive_prefix(path: String) -> Bool:
+  case string.length(path) < 3:
+    True -> False
+    False ->
+      let c = string.char_at(path, 0)
+      let colon = string.char_at(path, 1)
+      case colon == 58:
+        False -> False
+        True ->
+          case is_separator_at(path, 2):
+            False -> False
+            True -> is_ascii_alpha(c)
+
+fn is_ascii_alpha(c: Int) -> Bool:
+  case c >= 65 && c <= 90:
+    True -> True
+    False -> c >= 97 && c <= 122

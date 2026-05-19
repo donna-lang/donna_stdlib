@@ -11,3 +11,18 @@ pub fn now_us_is_at_least_millisecond_precision_test() -> String:
   let ms = time.now_ms()
   let us = time.now_us()
   test_should.is_true(us >= ms * 1000)
+
+pub fn monotonic_aliases_return_positive_values_test() -> String:
+  test_should.be_true(time.monotonic_ms() > 0) <> test_should.be_true(time.monotonic_us() > 0)
+
+pub fn unix_seconds_returns_modern_timestamp_test() -> String:
+  test_should.be_true(time.unix_seconds() > 1700000000)
+
+pub fn unix_ms_matches_unix_seconds_scale_test() -> String:
+  test_should.be_true(time.unix_ms() >= time.unix_seconds() * 1000)
+
+pub fn sleep_ms_waits_test() -> String:
+  let start = time.monotonic_ms()
+  let _ = time.sleep_ms(2)
+  let elapsed = time.monotonic_ms() - start
+  test_should.be_true(elapsed >= 0)

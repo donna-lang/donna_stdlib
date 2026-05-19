@@ -4,6 +4,28 @@ All notable changes to `donna_stdlib` will be documented in this file.
 
 ## Unreleased
 
+## [0.3.0] — 2026-05-19
+
+### Added
+
+- `io` module: `print`, `println`, `eprint`, `eprintln`, `flush`, `flush_stderr`, `read_line`, `read_all_stdin`.
+- `path` module: `separator`, `join`, `join_all`, `extension`, `drop_extension`, `basename`, `dirname`, `is_absolute`, `is_relative`, `normalize`, `relative`.
+- `files.mkdir_all` — create a directory and all missing parents.
+- `files.remove_dir` — remove an empty directory.
+- `files.remove_all` — remove a file or directory tree recursively.
+- `files.rename` — rename or move a file or directory.
+- `float.equal` — exact float equality comparison.
+- `float.near` — approximate float comparison within a tolerance.
+- `float.is_nan`, `float.is_infinite`, `float.is_finite` — float classification.
+- `float.sign` — return -1, 0, or 1 for the sign of a float.
+- `time.monotonic_ms`, `time.monotonic_us` — monotonic clock access (renamed from `now_ms`/`now_us`).
+- `time.unix_seconds`, `time.unix_ms` — wall-clock time since Unix epoch.
+- `time.sleep_ms` — sleep for a given number of milliseconds.
+
+### Changed
+
+- `time.now_ms`, `time.now_us` are now aliases for `time.monotonic_ms`, `time.monotonic_us`.
+
 ## [0.2.0] — 2026-05-17
 
 ### Changed

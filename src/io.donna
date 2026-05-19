@@ -1,0 +1,83 @@
+//// Basic process input and output utilities.
+
+@external("c", "donna_ffi_io_print")
+fn ffi_print(value: String) -> Nil
+
+@external("c", "donna_ffi_io_eprint")
+fn ffi_eprint(value: String) -> Nil
+
+@external("c", "donna_rt_flush")
+fn ffi_flush_stdout() -> Nil
+
+@external("c", "donna_ffi_io_flush_stderr")
+fn ffi_flush_stderr() -> Nil
+
+@external("c", "donna_ffi_io_read_line")
+fn ffi_read_line() -> String
+
+@external("c", "donna_ffi_io_read_all_stdin")
+fn ffi_read_all_stdin() -> String
+
+/// Write text to stdout without adding a newline.
+///
+/// ```donna
+/// io.print("hello")
+/// ```
+pub fn print(value: String) -> Nil:
+  ffi_print(value)
+
+/// Write text to stdout followed by a newline.
+///
+/// ```donna
+/// io.println("hello")
+/// ```
+pub fn println(value: String) -> Nil:
+  ffi_print(value <> "\n")
+
+/// Write text to stderr without adding a newline.
+///
+/// ```donna
+/// io.eprint("error")
+/// ```
+pub fn eprint(value: String) -> Nil:
+  ffi_eprint(value)
+
+/// Write text to stderr followed by a newline.
+///
+/// ```donna
+/// io.eprintln("error")
+/// ```
+pub fn eprintln(value: String) -> Nil:
+  ffi_eprint(value <> "\n")
+
+/// Flush stdout.
+///
+/// ```donna
+/// io.flush_stdout()
+/// ```
+pub fn flush_stdout() -> Nil:
+  ffi_flush_stdout()
+
+/// Flush stderr.
+///
+/// ```donna
+/// io.flush_stderr()
+/// ```
+pub fn flush_stderr() -> Nil:
+  ffi_flush_stderr()
+
+/// Read one line from stdin without the trailing newline.
+///
+/// ```donna
+/// io.read_line()
+/// ```
+pub fn read_line() -> String:
+  ffi_read_line()
+
+/// Read stdin until EOF.
+///
+/// ```donna
+/// io.read_all_stdin()
+/// ```
+pub fn read_all_stdin() -> String:
+  ffi_read_all_stdin()

@@ -9,13 +9,38 @@ fn ffi_now_ms() -> Int
 @external("c", "donna_ffi_time_now_us")
 fn ffi_now_us() -> Int
 
+@external("c", "donna_ffi_time_unix_seconds")
+fn ffi_unix_seconds() -> Int
+
+@external("c", "donna_ffi_time_unix_ms")
+fn ffi_unix_ms() -> Int
+
+@external("c", "donna_ffi_time_sleep_ms")
+fn ffi_sleep_ms(ms: Int) -> Nil
+
+/// Return the current monotonic clock value in milliseconds.
+///
+/// ```donna
+/// time.monotonic_ms()
+/// ```
+pub fn monotonic_ms() -> Int:
+  ffi_now_ms()
+
+/// Return the current monotonic clock value in microseconds.
+///
+/// ```donna
+/// time.monotonic_us()
+/// ```
+pub fn monotonic_us() -> Int:
+  ffi_now_us()
+
 /// Return the current monotonic clock value in milliseconds.
 ///
 /// ```donna
 /// time.now_ms()
 /// ```
 pub fn now_ms() -> Int:
-  ffi_now_ms()
+  monotonic_ms()
 
 /// Return the current monotonic clock value in microseconds.
 ///
@@ -23,4 +48,28 @@ pub fn now_ms() -> Int:
 /// time.now_us()
 /// ```
 pub fn now_us() -> Int:
-  ffi_now_us()
+  monotonic_us()
+
+/// Return the current Unix wall-clock timestamp in seconds.
+///
+/// ```donna
+/// time.unix_seconds()
+/// ```
+pub fn unix_seconds() -> Int:
+  ffi_unix_seconds()
+
+/// Return the current Unix wall-clock timestamp in milliseconds.
+///
+/// ```donna
+/// time.unix_ms()
+/// ```
+pub fn unix_ms() -> Int:
+  ffi_unix_ms()
+
+/// Sleep for at least approximately the requested number of milliseconds.
+///
+/// ```donna
+/// time.sleep_ms(10)
+/// ```
+pub fn sleep_ms(ms: Int) -> Nil:
+  ffi_sleep_ms(ms)

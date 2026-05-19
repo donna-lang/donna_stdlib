@@ -1,0 +1,86 @@
+import path
+import test_should
+
+pub fn join_test() -> String:
+  path.join("src", "main.donna") |> test_should.equal_string("src" <> path.separator() <> "main.donna")
+
+pub fn join_ignores_empty_left_test() -> String:
+  path.join("", "main.donna") |> test_should.equal_string("main.donna")
+
+pub fn join_ignores_empty_right_test() -> String:
+  path.join("src", "") |> test_should.equal_string("src")
+
+pub fn join_trims_leading_separator_from_right_test() -> String:
+  path.join("src/", "/main.donna") |> test_should.equal_string("src/main.donna")
+
+pub fn join_all_test() -> String:
+  path.join_all(["a", "b", "c.txt"]) |> test_should.equal_string("a" <> path.separator() <> "b" <> path.separator() <> "c.txt")
+
+pub fn basename_simple_test() -> String:
+  path.basename("src/main.donna") |> test_should.equal_string("main.donna")
+
+pub fn basename_windows_separator_test() -> String:
+  path.basename("src\\main.donna") |> test_should.equal_string("main.donna")
+
+pub fn basename_no_dir_test() -> String:
+  path.basename("Makefile") |> test_should.equal_string("Makefile")
+
+pub fn basename_trailing_separator_test() -> String:
+  path.basename("src/tools/") |> test_should.equal_string("tools")
+
+pub fn dirname_test() -> String:
+  path.dirname("src/main.donna") |> test_should.equal_string("src")
+
+pub fn dirname_windows_separator_test() -> String:
+  path.dirname("src\\main.donna") |> test_should.equal_string("src")
+
+pub fn dirname_no_dir_test() -> String:
+  path.dirname("Makefile") |> test_should.equal_string(".")
+
+pub fn extension_test() -> String:
+  path.extension("main.donna") |> test_should.equal_string(".donna")
+
+pub fn extension_archive_test() -> String:
+  path.extension("archive.tar.gz") |> test_should.equal_string(".gz")
+
+pub fn extension_dotfile_test() -> String:
+  path.extension(".env") |> test_should.equal_string("")
+
+pub fn extension_none_test() -> String:
+  path.extension("Makefile") |> test_should.equal_string("")
+
+pub fn stem_test() -> String:
+  path.stem("src/main.donna") |> test_should.equal_string("main")
+
+pub fn drop_extension_test() -> String:
+  path.drop_extension("main.donna") |> test_should.equal_string("main")
+
+pub fn drop_extension_with_dir_test() -> String:
+  path.drop_extension("src/foo.c") |> test_should.equal_string("src" <> path.separator() <> "foo")
+
+pub fn with_extension_adds_dot_test() -> String:
+  path.with_extension("src/main.donna", "ssa") |> test_should.equal_string("src" <> path.separator() <> "main.ssa")
+
+pub fn with_extension_accepts_dot_test() -> String:
+  path.with_extension("src/main.donna", ".ssa") |> test_should.equal_string("src" <> path.separator() <> "main.ssa")
+
+pub fn is_absolute_unix_test() -> String:
+  path.is_absolute("/tmp") |> test_should.be_true()
+
+pub fn is_absolute_windows_test() -> String:
+  path.is_absolute("C:\\tmp") |> test_should.be_true()
+
+pub fn is_relative_test() -> String:
+  path.is_relative("src/main.donna") |> test_should.be_true()
+
+pub fn split_test() -> String:
+  let parts = path.split("src/main.donna")
+  case parts:
+    ["src", "main.donna"] -> ""
+    _ -> test_should.fail("expected split path parts")
+
+pub fn normalize_removes_dot_segments_test() -> String:
+  path.normalize("src/./main.donna") |> test_should.equal_string("src" <> path.separator() <> "main.donna")
+
+pub fn normalize_removes_parent_segments_test() -> String:
+  path.normalize("src/tools/../main.donna") |> test_should.equal_string("src" <> path.separator() <> "main.donna")

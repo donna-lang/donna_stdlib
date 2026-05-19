@@ -64,6 +64,54 @@ pub fn is_negative(x: Float) -> Bool
 @external("c", "donna_float_is_zero")
 pub fn is_zero(x: Float) -> Bool
 
+/// Return True when two floats are exactly equal.
+///
+/// ```donna
+/// float.equal(1.0, 1.0)
+/// ```
+@external("c", "donna_float_equal")
+pub fn equal(a: Float, b: Float) -> Bool
+
+/// Return True when two floats are within a tolerance.
+///
+/// ```donna
+/// float.near(3.141, 3.14, 0.01)
+/// ```
+@external("c", "donna_float_near")
+pub fn near(a: Float, b: Float, tolerance: Float) -> Bool
+
+/// Return True when a float is NaN.
+///
+/// ```donna
+/// float.is_nan(0.0 / 0.0)
+/// ```
+@external("c", "donna_float_is_nan")
+pub fn is_nan(x: Float) -> Bool
+
+/// Return True when a float is positive or negative infinity.
+///
+/// ```donna
+/// float.is_infinite(1.0 / 0.0)
+/// ```
+@external("c", "donna_float_is_infinite")
+pub fn is_infinite(x: Float) -> Bool
+
+/// Return True when a float is neither NaN nor infinity.
+///
+/// ```donna
+/// float.is_finite(1.0)
+/// ```
+@external("c", "donna_float_is_finite")
+pub fn is_finite(x: Float) -> Bool
+
+/// Return -1 for negative values, 1 for positive values, and 0 for zero.
+///
+/// ```donna
+/// float.sign(-2.0)
+/// ```
+@external("c", "donna_float_sign")
+pub fn sign(x: Float) -> Int
+
 /// Return the square root.
 ///
 /// ```donna

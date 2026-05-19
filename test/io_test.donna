@@ -1,0 +1,11 @@
+import io
+import test_should
+
+pub fn print_functions_are_callable_test() -> String:
+  let _ = io.print("")
+  let _ = io.println("")
+  let _ = io.eprint("")
+  let _ = io.eprintln("")
+  let _ = io.flush_stdout()
+  let _ = io.flush_stderr()
+  test_should.be_true(True)
